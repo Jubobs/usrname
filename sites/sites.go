@@ -33,8 +33,8 @@ var (
 
 func All() []NameChecker {
 	return []NameChecker{
-		Facebook,
-		GitHub,
-		Twitter,
+		Facebook(),
+		GitHub(),
+		Twitter(),
 	}
 }

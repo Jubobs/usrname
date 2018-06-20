@@ -4,8 +4,12 @@ import (
 	"net/url"
 )
 
-var GitHub NameChecker = &github{
-	urlFrom: func(username string) url.URL {
+type github struct {
+	urlFrom func(string) url.URL
+}
+
+var githubImpl = github{
+	func(username string) url.URL {
 		return url.URL{
 			Scheme: "https",
 			Host:   "github.com",
@@ -14,8 +18,8 @@ var GitHub NameChecker = &github{
 	},
 }
 
-type github struct {
-	urlFrom func(string) url.URL
+func GitHub() NameChecker {
+	return &githubImpl
 }
 
 func (*github) Name() string {

@@ -4,7 +4,11 @@ import (
 	"net/url"
 )
 
-var Facebook NameChecker = &facebook{
+type facebook struct {
+	urlFrom func(string) url.URL
+}
+
+var facebookImpl = facebook{
 	urlFrom: func(username string) url.URL {
 		return url.URL{
 			Scheme: "https",
@@ -14,8 +18,8 @@ var Facebook NameChecker = &facebook{
 	},
 }
 
-type facebook struct {
-	urlFrom func(string) url.URL
+func Facebook() NameChecker {
+	return &facebookImpl
 }
 
 func (*facebook) Name() string {

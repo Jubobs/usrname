@@ -4,7 +4,11 @@ import (
 	"net/url"
 )
 
-var Twitter NameChecker = &twitter{
+type twitter struct {
+	urlFrom func(string) url.URL
+}
+
+var twitterImpl = twitter{
 	urlFrom: func(username string) url.URL {
 		return url.URL{
 			Scheme: "https",
@@ -14,8 +18,8 @@ var Twitter NameChecker = &twitter{
 	},
 }
 
-type twitter struct {
-	urlFrom func(string) url.URL
+func Twitter() NameChecker {
+	return &twitterImpl
 }
 
 func (*twitter) Name() string {
