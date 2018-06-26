@@ -26,6 +26,7 @@ func All() []NameChecker {
 	return []NameChecker{
 		Facebook(),
 		GitHub(),
+		Instagram(),
 		Twitter(),
 	}
 }
