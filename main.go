@@ -1,44 +1,53 @@
-// TODO:
-// * way to enumerate sites? => provide a map of checkers?
-// * use URL rather than string concatenation
-// * actually flesh out IsValid methods
-
-// func(username string) URL
-// func(url URL, func(Response) error): error
-
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"github.com/jubobs/username-checker/sites"
-	"os"
+	"log"
+	"net/http"
+	"strings"
 )
 
+var checkers = sites.All()
+var client = sites.NewClient()
+var checkAll = sites.UniversalChecker(client, checkers)
+
+type payload struct {
+	Name string            `json:"username"`
+	Res  map[string]string `json:"status"`
+}
+
 func main() {
-	username := os.Args[1]
-	checkers := sites.All()
-	client := sites.NewClient()
+	http.HandleFunc("/", handler)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
 
-	// see https://www.safaribooksonline.com/library/view/ultimate-go-programming/9780134757476/ugpg_04_10_03_00.html
-	// and https://gist.github.com/Jubobs/3987c6f9f902489356ccd12422c64e1d
-	n := len(checkers)
-	ch := make(chan string, n)
-	waitChecks := n
+func handler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	username := strings.TrimPrefix(r.URL.Path, "/")
+	res := checkAll(username)
 
-	for _, checker := range checkers {
-		go func(c sites.NameChecker) {
-			if err := c.Check(client, username); err != nil {
-				ch <- err.Error()
-			} else {
-				ch <- fmt.Sprintf("%s is available and valid on %s", username, c.Name())
+	res2 := make(map[string]string)
+	for name, err := range res {
+		if err != nil {
+			switch {
+			case sites.IsUnavailableUsernameError(err):
+				res2[name] = "unavailable"
+			default:
+				res2[name] = "unknown"
 			}
-
-		}(checker)
+		} else {
+			res2[name] = "available"
+		}
 	}
-
-	for waitChecks > 0 {
-		r := <-ch
-		fmt.Println(r)
-		waitChecks--
+	p := payload{
+		Name: username,
+		Res:  res2,
+	}
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", " ")
+	err := encoder.Encode(p)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
