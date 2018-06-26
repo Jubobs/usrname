@@ -38,10 +38,13 @@ func (t *twitter) Check(client Client, username string) error {
 	}
 	switch statusCode {
 	case 200:
-		return ErrUnavailableUsername
+		return &unavailableUsernameError{
+			Namer:    Twitter(),
+			username: username,
+		}
 	case 404:
 		return nil
 	default:
-		return err
+		return &unexpectedError{err}
 	}
 }

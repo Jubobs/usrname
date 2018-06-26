@@ -26,7 +26,7 @@ func main() {
 
 	for _, checker := range checkers {
 		go func(c sites.NameChecker) {
-			if err := c.Check(client, username); err != nil {
+			if err := c.Check(client, username); err != nil && sites.IsUnavailableUsernameError(err) {
 				ch <- fmt.Sprintf("%s is not available on %s", username, c.Name())
 			} else {
 				ch <- fmt.Sprintf("%s is available on %s", username, c.Name())

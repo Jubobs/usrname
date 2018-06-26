@@ -1,9 +1,5 @@
 package sites
 
-import (
-	"errors"
-)
-
 type Namer interface {
 	Name() string
 }
@@ -25,11 +21,6 @@ type ValidNameChecker interface {
 	Validator
 	NameChecker
 }
-
-var (
-	ErrUnavailableUsername = errors.New("unavailable username")
-	ErrInvalidUserName     = errors.New("invalid username")
-)
 
 func All() []NameChecker {
 	return []NameChecker{
