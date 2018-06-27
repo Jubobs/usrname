@@ -9,10 +9,14 @@ import (
 )
 
 type twitter struct {
+	name    string
+	home    string
 	urlFrom func(string) url.URL
 }
 
 var twitterImpl = twitter{
+	name: "Twitter",
+	home: "https://twitter.com",
 	urlFrom: func(username string) url.URL {
 		return url.URL{
 			Scheme: "https",
@@ -33,8 +37,12 @@ func Twitter() ValidNameChecker {
 	return &twitterImpl
 }
 
-func (*twitter) Name() string {
-	return "Twitter"
+func (t *twitter) Name() string {
+	return t.name
+}
+
+func (t *twitter) Home() string {
+	return t.home
 }
 
 // See https://help.twitter.com/en/managing-your-account/twitter-username-rules
