@@ -2,6 +2,7 @@ package sites
 
 import (
 	"errors" // TODO: remove this dep
+	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
@@ -61,12 +62,12 @@ func (t *twitter) Check(client Client, username string) error {
 		return err
 	}
 	switch statusCode {
-	case 200:
+	case http.StatusOK:
 		return &unavailableUsernameError{
 			Namer:    Twitter(),
 			username: username,
 		}
-	case 404:
+	case http.StatusNotFound:
 		return nil
 	default:
 		return &unexpectedError{err}

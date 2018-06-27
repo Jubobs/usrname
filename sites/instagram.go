@@ -1,6 +1,7 @@
 package sites
 
 import (
+	"net/http"
 	"net/url"
 )
 
@@ -36,12 +37,12 @@ func (t *instagram) Check(client Client, username string) error {
 		return err
 	}
 	switch statusCode {
-	case 200:
+	case http.StatusOK:
 		return &unavailableUsernameError{
 			Namer:    Instagram(),
 			username: username,
 		}
-	case 404:
+	case http.StatusNotFound:
 		return nil
 	default:
 		return &unexpectedError{err}
