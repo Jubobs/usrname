@@ -34,8 +34,8 @@ func TestTwitterValidate(t *testing.T) {
 	}
 	for _, c := range cases {
 		err := checker.Validate(c.username)
-		if (err == nil) != c.valid {
-			template := "(Twitter().Validate(%q) == nil) == %t, want %t"
+		if sites.IsInvalidUsernameError(err) == c.valid {
+			template := "(IsInvalidUsernameError(Twitter().Validate(%q)) == %t, want %t"
 			t.Errorf(template, c.username, err == nil, c.valid)
 		}
 	}

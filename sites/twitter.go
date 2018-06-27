@@ -1,7 +1,6 @@
 package sites
 
 import (
-	"errors" // TODO: remove this dep
 	"net/http"
 	"net/url"
 	"regexp"
@@ -41,15 +40,19 @@ func (*twitter) Name() string {
 // See https://help.twitter.com/en/managing-your-account/twitter-username-rules
 func (*twitter) Validate(username string) error {
 	runeCount := utf8.RuneCountInString(username)
+	err := &invalidUsernameError{
+		Namer:    Twitter(),
+		username: username,
+	}
 	switch {
 	case runeCount < minLength:
-		return errors.New("too short") // TODO: append to []Violations
+		return err
 	case !expectedPattern.MatchString(username):
-		return errors.New("illegal characters") // TODO: append to []Violations
+		return err
 	case strings.Contains(strings.ToLower(username), forbiddenPattern):
-		return errors.New("illegal pattern") // TODO: append to []Violations
+		return err
 	case maxLength < runeCount:
-		return errors.New("too long") // TODO: append to []Violations
+		return err
 	default:
 		return nil
 	}
