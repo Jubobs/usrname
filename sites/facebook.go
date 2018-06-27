@@ -18,7 +18,7 @@ var facebookImpl = facebook{
 	},
 }
 
-func Facebook() NameChecker {
+func Facebook() ValidNameChecker {
 	return &facebookImpl
 }
 

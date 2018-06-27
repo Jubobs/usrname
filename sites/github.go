@@ -18,7 +18,7 @@ var githubImpl = github{
 	},
 }
 
-func GitHub() NameChecker {
+func GitHub() ValidNameChecker {
 	return &githubImpl
 }
 

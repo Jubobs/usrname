@@ -1,7 +1,6 @@
 package sites
 
 import (
-	"fmt"
 	"net/url"
 )
 
@@ -18,7 +17,7 @@ var instagramImpl = instagram{
 	},
 }
 
-func Instagram() NameChecker {
+func Instagram() ValidNameChecker {
 	return &instagramImpl
 }
 
@@ -32,7 +31,6 @@ func (*instagram) Validate(username string) error {
 
 func (t *instagram) Check(client Client, username string) error {
 	u := t.urlFrom(username)
-	fmt.Println(u)
 	statusCode, err := client.GetStatusCode(u)
 	if err != nil {
 		return err

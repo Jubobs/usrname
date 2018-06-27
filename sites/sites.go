@@ -22,8 +22,8 @@ type ValidNameChecker interface {
 	NameChecker
 }
 
-func All() []NameChecker {
-	return []NameChecker{
+func All() []ValidNameChecker {
+	return []ValidNameChecker{
 		Facebook(),
 		GitHub(),
 		Instagram(),
@@ -34,19 +34,23 @@ func All() []NameChecker {
 type resultsByName map[string]error
 
 type result struct {
-	nc  NameChecker
+	nc  ValidNameChecker
 	err error
 }
 
 // find better name for this method
-func UniversalChecker(client Client, checkers []NameChecker) func(string) resultsByName {
+func UniversalChecker(client Client, checkers []ValidNameChecker) func(string) resultsByName {
 	n := len(checkers)
 	return func(username string) resultsByName {
 		ch := make(chan *result, n)
 
 		for _, checker := range checkers {
-			go func(nc NameChecker) {
-				err := nc.Check(client, username)
+			go func(nc ValidNameChecker) {
+				err := nc.Validate(username)
+				if err != nil {
+					ch <- &result{nc, err}
+				}
+				err = nc.Check(client, username)
 				ch <- &result{nc, err}
 			}(checker)
 		}
