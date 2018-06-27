@@ -3,7 +3,6 @@ package sites_test
 import (
 	"github.com/jubobs/username-checker/sites"
 	"net/http"
-	"net/url"
 	"testing"
 )
 
@@ -38,27 +37,6 @@ func TestTwitterValidate(t *testing.T) {
 			template := "(IsInvalidUsernameError(Twitter().Validate(%q)) == %t, want %t"
 			t.Errorf(template, c.username, err == nil, c.valid)
 		}
-	}
-}
-
-type MockClient struct {
-	GetStatusCodeFunc  func(url.URL) (int, error)
-	HeadStatusCodeFunc func(url.URL) (int, error)
-}
-
-func (m MockClient) GetStatusCode(u url.URL) (int, error) {
-	return m.GetStatusCodeFunc(u)
-}
-
-func (m MockClient) HeadStatusCode(u url.URL) (int, error) {
-	return m.HeadStatusCodeFunc(u)
-}
-
-func mockClientHead(statusCode int, err error) sites.Client {
-	return MockClient{
-		HeadStatusCodeFunc: func(_ url.URL) (int, error) {
-			return statusCode, err
-		},
 	}
 }
 
