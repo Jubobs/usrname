@@ -10,8 +10,9 @@ type TooLong struct {
 	Max, Actual int
 }
 
-type IllegalString struct {
-	Lo, Hi int
+type IllegalSubstring struct {
+	Sub string
+	At  int
 }
 
 type IllegalChars struct{} // TODO: refine later (indicate indices of illegal chars)

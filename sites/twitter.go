@@ -27,10 +27,10 @@ var twitterImpl = twitter{
 }
 
 const (
-	minLength          = 1
-	maxLength          = 15
-	forbiddenSubstring = "twitter"
-	expectedPattern    = "^[A-Za-z0-9_]*$"
+	minLength        = 1
+	maxLength        = 15
+	illegalSubstring = "twitter"
+	expectedPattern  = "^[A-Za-z0-9_]*$"
 )
 
 var expectedRegexp = regexp.MustCompile(expectedPattern)
@@ -62,10 +62,10 @@ func (*twitter) Validate(username string) []Violation {
 		v := IllegalChars{}
 		violations = append(violations, &v)
 	}
-	if strings.Contains(strings.ToLower(username), forbiddenSubstring) {
-		v := IllegalString{
-			Lo: -1, // TODO: fix me
-			Hi: -1, // TODO: fix me
+	if i := strings.Index(strings.ToLower(username), illegalSubstring); i != -1 {
+		v := IllegalSubstring{
+			Sub: illegalSubstring,
+			At:  i,
 		}
 		violations = append(violations, &v)
 	}
