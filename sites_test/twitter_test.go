@@ -1,6 +1,7 @@
 package sites_test
 
 import (
+	"errors"
 	"github.com/jubobs/username-checker/sites"
 	"net/http"
 	"testing"
@@ -51,5 +52,52 @@ func TestCheckNotFound(t *testing.T) {
 	if !(err == nil && available) {
 		const template = "Twitter().IsAvailable(%q) == (%t, %v), but expected (true, <nil>)"
 		t.Errorf(template, dummyUsername, available, err)
+	}
+}
+
+func TestCheckOk(t *testing.T) {
+	// Given
+	client := mockClientHead(http.StatusOK, nil)
+	const dummyUsername = "dummy"
+
+	// When
+	available, err := checker.IsAvailable(client)(dummyUsername)
+
+	// Then
+	if err != nil || available {
+		const template = "Twitter().IsAvailable(%q) == (%t, %v), but expected (false, <nil>)"
+		t.Errorf(template, dummyUsername, available, err)
+	}
+}
+
+func TestCheckOther(t *testing.T) {
+	// Given
+	const statusCode = 999 // anything other than 200 and 404
+	client := mockClientHead(statusCode, nil)
+	const dummyUsername = "dummy"
+
+	// When
+	_, err := checker.IsAvailable(client)(dummyUsername) // irrelevant bool
+
+	// Then
+	if !sites.IsUnexpectedStatusCodeError(err) {
+		const template = "got %v, but want an unexpected-status-code error"
+		t.Errorf(template, err)
+	}
+}
+
+func TestCheckNetworkError(t *testing.T) {
+	// Given
+	someError := errors.New("Oh no!")
+	client := mockClientHead(0, someError)
+	const dummyUsername = "dummy"
+
+	// When
+	_, err := checker.IsAvailable(client)(dummyUsername) // irrelevant bool
+
+	// Then
+	if !sites.IsNetworkError(err) {
+		const template = "got %v, but want network error"
+		t.Errorf(template, err)
 	}
 }
