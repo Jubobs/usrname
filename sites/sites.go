@@ -3,12 +3,9 @@ package sites
 type Site interface {
 	Name() string
 	Home() string
-	Validate(username string) Violations
+	Validate(username string) []Violation
 	IsAvailable(client Client) func(string) (bool, error)
 }
-
-type Violations []Violation
-type Violation string
 
 func All() []Site {
 	return []Site{

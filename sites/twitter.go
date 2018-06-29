@@ -26,12 +26,14 @@ var twitterImpl = twitter{
 	},
 }
 
-var (
+const (
 	minLength          = 1
 	maxLength          = 15
-	expectedPattern    = regexp.MustCompile("^[_A-Za-z0-9]+$")
 	forbiddenSubstring = "twitter"
+	expectedPattern    = "^[A-Za-z0-9_]+$"
 )
+
+var expectedRegexp = regexp.MustCompile(expectedPattern)
 
 func Twitter() Site {
 	return &twitterImpl
@@ -46,21 +48,33 @@ func (t *twitter) Home() string {
 }
 
 // See https://help.twitter.com/en/managing-your-account/twitter-username-rules
-func (*twitter) Validate(username string) Violations {
+func (*twitter) Validate(username string) []Violation {
 	runeCount := utf8.RuneCountInString(username)
-	violations := []Violation{"invalid username"} // TODO: tidy this up
+	violations := []Violation{}
 	switch {
 	case runeCount < minLength:
-		return violations
-	case !expectedPattern.MatchString(username):
-		return violations
+		v := TooShort{
+			Min:    minLength,
+			Actual: runeCount,
+		}
+		violations = append(violations, &v)
+	case !expectedRegexp.MatchString(username):
+		v := IllegalChars{}
+		violations = append(violations, &v)
 	case strings.Contains(strings.ToLower(username), forbiddenSubstring):
-		return violations
+		v := IllegalString{
+			Lo: -1, // TODO: fix me
+			Hi: -1, // TODO: fix me
+		}
+		violations = append(violations, &v)
 	case maxLength < runeCount:
-		return violations
-	default:
-		return []Violation{}
+		v := TooLong{
+			Max:    maxLength,
+			Actual: runeCount,
+		}
+		violations = append(violations, &v)
 	}
+	return violations
 }
 
 func (t *twitter) IsAvailable(client Client) func(string) (bool, error) {
