@@ -63,18 +63,20 @@ func (*twitter) Validate(username string) Violations {
 	}
 }
 
-func (t *twitter) CheckAvailability(client Client, username string) (bool, error) {
-	u := t.urlFrom(username)
-	statusCode, err := client.HeadStatusCode(u)
-	if err != nil {
-		return false, &networkError{err}
-	}
-	switch statusCode {
-	case http.StatusOK:
-		return false, nil
-	case http.StatusNotFound:
-		return true, nil
-	default:
-		return false, &unexpectedStatusCodeError{statusCode}
+func (t *twitter) IsAvailable(client Client) func(string) (bool, error) {
+	return func(username string) (bool, error) {
+		u := t.urlFrom(username)
+		statusCode, err := client.HeadStatusCode(u)
+		if err != nil {
+			return false, &networkError{err}
+		}
+		switch statusCode {
+		case http.StatusOK:
+			return false, nil
+		case http.StatusNotFound:
+			return true, nil
+		default:
+			return false, &unexpectedStatusCodeError{statusCode}
+		}
 	}
 }

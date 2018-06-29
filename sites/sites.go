@@ -4,7 +4,7 @@ type Site interface {
 	Name() string
 	Home() string
 	Validate(username string) Violations
-	CheckAvailability(client Client, username string) (bool, error)
+	IsAvailable(client Client) func(string) (bool, error)
 }
 
 type Violations []Violation
