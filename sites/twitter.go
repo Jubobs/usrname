@@ -30,7 +30,7 @@ const (
 	minLength          = 1
 	maxLength          = 15
 	forbiddenSubstring = "twitter"
-	expectedPattern    = "^[A-Za-z0-9_]+$"
+	expectedPattern    = "^[A-Za-z0-9_]*$"
 )
 
 var expectedRegexp = regexp.MustCompile(expectedPattern)
@@ -51,23 +51,25 @@ func (t *twitter) Home() string {
 func (*twitter) Validate(username string) []Violation {
 	runeCount := utf8.RuneCountInString(username)
 	violations := []Violation{}
-	switch {
-	case runeCount < minLength:
+	if runeCount < minLength {
 		v := TooShort{
 			Min:    minLength,
 			Actual: runeCount,
 		}
 		violations = append(violations, &v)
-	case !expectedRegexp.MatchString(username):
+	}
+	if !expectedRegexp.MatchString(username) {
 		v := IllegalChars{}
 		violations = append(violations, &v)
-	case strings.Contains(strings.ToLower(username), forbiddenSubstring):
+	}
+	if strings.Contains(strings.ToLower(username), forbiddenSubstring) {
 		v := IllegalString{
 			Lo: -1, // TODO: fix me
 			Hi: -1, // TODO: fix me
 		}
 		violations = append(violations, &v)
-	case maxLength < runeCount:
+	}
+	if maxLength < runeCount {
 		v := TooLong{
 			Max:    maxLength,
 			Actual: runeCount,

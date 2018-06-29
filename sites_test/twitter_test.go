@@ -40,6 +40,7 @@ func TestTwitterValidate(t *testing.T) {
 		{"not_ok_TwitteR", 1},
 		{"admin_fine", 0},
 		{"longerthan15char", 1},
+		{"exotic^chars_and_too_long", 2},
 	}
 	const template = "(len(Twitter().Validate(%q))) is %d, but expected %d"
 	for _, c := range cases {
