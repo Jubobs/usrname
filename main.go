@@ -31,10 +31,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	for name, err := range res {
 		if err != nil {
 			switch {
-			case sites.IsInvalidUsernameError(err):
-				res2[name] = "invalid"
-			case sites.IsUnavailableUsernameError(err):
-				res2[name] = "unavailable"
+			// TODO: fix this
+			// case sites.IsInvalidUsernameError(err):
+			// 	res2[name] = "invalid"
+			// case sites.IsUnavailableUsernameError(err):
+			// 	res2[name] = "unavailable"
 			default:
 				res2[name] = "unknown"
 			}

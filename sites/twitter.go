@@ -27,10 +27,10 @@ var twitterImpl = twitter{
 }
 
 var (
-	minLength        = 1
-	maxLength        = 15
-	expectedPattern  = regexp.MustCompile("^[_A-Za-z0-9]+$")
-	forbiddenPattern = "twitter"
+	minLength          = 1
+	maxLength          = 15
+	expectedPattern    = regexp.MustCompile("^[_A-Za-z0-9]+$")
+	forbiddenSubstring = "twitter"
 )
 
 func Twitter() ValidNameChecker {
@@ -46,41 +46,35 @@ func (t *twitter) Home() string {
 }
 
 // See https://help.twitter.com/en/managing-your-account/twitter-username-rules
-func (*twitter) Validate(username string) error {
+func (*twitter) Validate(username string) []string {
 	runeCount := utf8.RuneCountInString(username)
-	err := &invalidUsernameError{
-		Namer:    Twitter(),
-		username: username,
-	}
+	violations := []string{"invalid username"} // TODO: tidy this up
 	switch {
 	case runeCount < minLength:
-		return err
+		return violations
 	case !expectedPattern.MatchString(username):
-		return err
-	case strings.Contains(strings.ToLower(username), forbiddenPattern):
-		return err
+		return violations
+	case strings.Contains(strings.ToLower(username), forbiddenSubstring):
+		return violations
 	case maxLength < runeCount:
-		return err
+		return violations
 	default:
-		return nil
+		return []string{}
 	}
 }
 
-func (t *twitter) Check(client Client, username string) error {
+func (t *twitter) Check(client Client, username string) (bool, error) {
 	u := t.urlFrom(username)
 	statusCode, err := client.HeadStatusCode(u)
 	if err != nil {
-		return err
+		return false, &networkError{err}
 	}
 	switch statusCode {
 	case http.StatusOK:
-		return &unavailableUsernameError{
-			Namer:    Twitter(),
-			username: username,
-		}
+		return false, nil
 	case http.StatusNotFound:
-		return nil
+		return true, nil
 	default:
-		return &unexpectedError{err}
+		return false, &unexpectedStatusCodeError{statusCode}
 	}
 }

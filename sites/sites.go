@@ -1,15 +1,19 @@
 package sites
 
+import (
+	"errors"
+)
+
 type Namer interface {
 	Name() string
 }
 
 type Validator interface {
-	Validate(username string) error
+	Validate(username string) []string // TODO: introduce Violation type
 }
 
 type Checker interface {
-	Check(client Client, username string) error
+	Check(client Client, username string) (bool, error)
 }
 
 type NameChecker interface {
@@ -24,9 +28,9 @@ type ValidNameChecker interface {
 
 func All() []ValidNameChecker {
 	return []ValidNameChecker{
-		Facebook(),
-		GitHub(),
-		Instagram(),
+		// Facebook(),
+		// GitHub(),
+		// Instagram(),
 		Twitter(),
 	}
 }
@@ -46,11 +50,11 @@ func UniversalChecker(client Client, checkers []ValidNameChecker) func(string) r
 
 		for _, checker := range checkers {
 			go func(nc ValidNameChecker) {
-				err := nc.Validate(username)
-				if err != nil {
-					ch <- &result{nc, err}
+				violations := nc.Validate(username)
+				if len(violations) > 0 {
+					ch <- &result{nc, errors.New("invalid username")} // TODO: tidy up
 				}
-				err = nc.Check(client, username)
+				_, err := nc.Check(client, username)
 				ch <- &result{nc, err}
 			}(checker)
 		}
