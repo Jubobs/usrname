@@ -1,7 +1,6 @@
 package sites_test
 
 import (
-	"errors"
 	"github.com/jubobs/username-checker/sites"
 	"net/http"
 	"testing"
@@ -20,60 +19,37 @@ func TestTwitterName(t *testing.T) {
 
 func TestTwitterValidate(t *testing.T) {
 	cases := []struct {
-		username string
-		valid    bool
+		username       string
+		noOfViolations int // TODO: refine when I introduce Violation type
 	}{
-		{"", false},
-		{"0", true},
-		{"exotic^chars", false},
-		{"underscores_ok", true},
-		{"twitter_no_ok", false},
-		{"not_ok_TwitteR", false},
-		{"admin_fine", true},
-		{"longerthan15char", false},
+		{"", 1},
+		{"0", 0},
+		{"exotic^chars", 1},
+		{"underscores_ok", 0},
+		{"twitter_no_ok", 1},
+		{"not_ok_TwitteR", 1},
+		{"admin_fine", 0},
+		{"longerthan15char", 1},
 	}
-	const template = "(IsInvalidUsernameError(Twitter().Validate(%q)) == %t, want %t"
+	const template = "(len(Twitter().Validate(%q))) is %d, but expected %d"
 	for _, c := range cases {
-		err := checker.Validate(c.username)
-		if sites.IsInvalidUsernameError(err) == c.valid {
-			t.Errorf(template, c.username, err == nil, c.valid)
+		if vs := checker.Validate(c.username); len(vs) != c.noOfViolations {
+			t.Errorf(template, c.username, len(vs), c.noOfViolations)
 		}
 	}
 }
 
 func TestCheckNotFound(t *testing.T) {
+	// Given
 	client := mockClientHead(http.StatusNotFound, nil)
 	const dummyUsername = "dummy"
 
-	var expected error = nil
-	actual := checker.Check(client, dummyUsername)
-	if actual != nil {
-		t.Errorf("Twitter().Check() == %v, want %v", actual, expected)
-	}
-}
+	// When
+	available, err := checker.IsAvailable(client)(dummyUsername)
 
-func TestCheckOK(t *testing.T) {
-	client := mockClientHead(http.StatusOK, nil)
-	const dummyUsername = "dummy"
-
-	const expected = true
-	actual := sites.IsUnavailableUsernameError(checker.Check(client, dummyUsername))
-	if actual != expected {
-		const template = "(IsUnavailableUsernameError(Twitter().Validate(%q)) == %t, want %t"
-		t.Errorf(template, dummyUsername, actual, expected)
-	}
-}
-
-func TestCheckOther(t *testing.T) {
-	const statusCode = 999 // anything other than 200 and 404
-	err := errors.New("Oh no!")
-	client := mockClientHead(statusCode, err)
-	const dummyUsername = "dummy"
-	t.Log(checker.Check(client, dummyUsername))
-	const expected = true
-	actual := sites.IsUnexpectedError(checker.Check(client, dummyUsername))
-	if actual != expected {
-		const template = "(IsUnexpectedError(Twitter().Validate(%q)) == %t, want %t"
-		t.Errorf(template, dummyUsername, actual, expected)
+	// Then
+	if !(err == nil && available) {
+		const template = "Twitter().IsAvailable(%q) == (%t, %v), but expected (true, <nil>)"
+		t.Errorf(template, dummyUsername, available, err)
 	}
 }
