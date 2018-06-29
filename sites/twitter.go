@@ -33,7 +33,7 @@ var (
 	forbiddenSubstring = "twitter"
 )
 
-func Twitter() ValidNameChecker {
+func Twitter() Site {
 	return &twitterImpl
 }
 
@@ -46,9 +46,9 @@ func (t *twitter) Home() string {
 }
 
 // See https://help.twitter.com/en/managing-your-account/twitter-username-rules
-func (*twitter) Validate(username string) []string {
+func (*twitter) Validate(username string) Violations {
 	runeCount := utf8.RuneCountInString(username)
-	violations := []string{"invalid username"} // TODO: tidy this up
+	violations := []Violation{"invalid username"} // TODO: tidy this up
 	switch {
 	case runeCount < minLength:
 		return violations
@@ -59,11 +59,11 @@ func (*twitter) Validate(username string) []string {
 	case maxLength < runeCount:
 		return violations
 	default:
-		return []string{}
+		return []Violation{}
 	}
 }
 
-func (t *twitter) Check(client Client, username string) (bool, error) {
+func (t *twitter) CheckAvailability(client Client, username string) (bool, error) {
 	u := t.urlFrom(username)
 	statusCode, err := client.HeadStatusCode(u)
 	if err != nil {
