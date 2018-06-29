@@ -7,11 +7,11 @@ import (
 	"testing"
 )
 
-var checker = sites.Twitter()
+var s = sites.Twitter()
 
 func TestTwitterName(t *testing.T) {
 	const expected = "Twitter"
-	actual := checker.Name()
+	actual := s.Name()
 	if actual != expected {
 		template := "sites.Twitter().Name() == %q, want %q"
 		t.Errorf(template, actual, expected)
@@ -34,7 +34,7 @@ func TestTwitterValidate(t *testing.T) {
 	}
 	const template = "(len(Twitter().Validate(%q))) is %d, but expected %d"
 	for _, c := range cases {
-		if vs := checker.Validate(c.username); len(vs) != c.noOfViolations {
+		if vs := s.Validate(c.username); len(vs) != c.noOfViolations {
 			t.Errorf(template, c.username, len(vs), c.noOfViolations)
 		}
 	}
@@ -46,7 +46,7 @@ func TestCheckNotFound(t *testing.T) {
 	const dummyUsername = "dummy"
 
 	// When
-	available, err := checker.IsAvailable(client)(dummyUsername)
+	available, err := s.IsAvailable(client)(dummyUsername)
 
 	// Then
 	if !(err == nil && available) {
@@ -61,7 +61,7 @@ func TestCheckOk(t *testing.T) {
 	const dummyUsername = "dummy"
 
 	// When
-	available, err := checker.IsAvailable(client)(dummyUsername)
+	available, err := s.IsAvailable(client)(dummyUsername)
 
 	// Then
 	if err != nil || available {
@@ -77,7 +77,7 @@ func TestCheckOther(t *testing.T) {
 	const dummyUsername = "dummy"
 
 	// When
-	_, err := checker.IsAvailable(client)(dummyUsername) // irrelevant bool
+	_, err := s.IsAvailable(client)(dummyUsername) // irrelevant bool
 
 	// Then
 	if !sites.IsUnexpectedStatusCodeError(err) {
@@ -93,7 +93,7 @@ func TestCheckNetworkError(t *testing.T) {
 	const dummyUsername = "dummy"
 
 	// When
-	_, err := checker.IsAvailable(client)(dummyUsername) // irrelevant bool
+	_, err := s.IsAvailable(client)(dummyUsername) // irrelevant bool
 
 	// Then
 	if !sites.IsNetworkError(err) {

@@ -8,8 +8,9 @@ import (
 	"strings"
 )
 
-var checkers = sites.All()
+var ss = sites.All()
 var client = sites.NewClient()
+
 // var checkAll = sites.UniversalChecker(client, checkers)
 
 type payload struct {
