@@ -18,6 +18,15 @@ func TestTwitterName(t *testing.T) {
 	}
 }
 
+func TestTwitterHome(t *testing.T) {
+	const expected = "https://twitter.com"
+	actual := s.Home()
+	if actual != expected {
+		template := "sites.Twitter().Home() == %q, want %q"
+		t.Errorf(template, actual, expected)
+	}
+}
+
 func TestTwitterValidate(t *testing.T) {
 	cases := []struct {
 		username       string
