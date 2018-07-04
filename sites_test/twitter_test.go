@@ -52,7 +52,7 @@ func TestTwitterValidate(t *testing.T) {
 
 func TestCheckNotFound(t *testing.T) {
 	// Given
-	client := mockClientHead(http.StatusNotFound, nil)
+	client := mockClient(http.StatusNotFound, nil)
 	const dummyUsername = "dummy"
 
 	// When
@@ -67,7 +67,7 @@ func TestCheckNotFound(t *testing.T) {
 
 func TestCheckOk(t *testing.T) {
 	// Given
-	client := mockClientHead(http.StatusOK, nil)
+	client := mockClient(http.StatusOK, nil)
 	const dummyUsername = "dummy"
 
 	// When
@@ -83,7 +83,7 @@ func TestCheckOk(t *testing.T) {
 func TestCheckOther(t *testing.T) {
 	// Given
 	const statusCode = 999 // anything other than 200 and 404
-	client := mockClientHead(statusCode, nil)
+	client := mockClient(statusCode, nil)
 	const dummyUsername = "dummy"
 
 	// When
@@ -99,7 +99,7 @@ func TestCheckOther(t *testing.T) {
 func TestCheckNetworkError(t *testing.T) {
 	// Given
 	someError := errors.New("Oh no!")
-	client := mockClientHead(0, someError)
+	client := mockClient(0, someError)
 	const dummyUsername = "dummy"
 
 	// When

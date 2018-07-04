@@ -9,21 +9,26 @@ import (
 )
 
 type twitter struct {
-	name    string
-	home    string
-	urlFrom func(string) url.URL
+	name   string
+	home   string
+	scheme string
+	host   string
 }
 
 var twitterImpl = twitter{
-	name: "Twitter",
-	home: "https://twitter.com",
-	urlFrom: func(username string) url.URL {
-		return url.URL{
-			Scheme: "https",
-			Host:   "twitter.com",
-			Path:   username,
-		}
-	},
+	name:   "Twitter",
+	home:   "https://twitter.com",
+	scheme: "https",
+	host:   "twitter.com",
+}
+
+func twitterRequest(username string) (*http.Request, error) {
+	u := url.URL{
+		Scheme: twitterImpl.scheme,
+		Host:   twitterImpl.host,
+		Path:   username,
+	}
+	return http.NewRequest("HEAD", u.String(), nil)
 }
 
 const (
@@ -81,8 +86,8 @@ func (*twitter) Validate(username string) []Violation {
 
 func (t *twitter) IsAvailable(client Client) func(string) (bool, error) {
 	return func(username string) (bool, error) {
-		u := t.urlFrom(username)
-		statusCode, err := client.HeadStatusCode(u)
+		req, err := twitterRequest(username)
+		statusCode, err := client.Send(req)
 		if err != nil {
 			return false, &networkError{err}
 		}

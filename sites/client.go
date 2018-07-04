@@ -2,7 +2,6 @@ package sites
 
 import (
 	"net/http"
-	"net/url"
 )
 
 func NewClient() Client {
@@ -10,25 +9,16 @@ func NewClient() Client {
 }
 
 type Client interface {
-	GetStatusCode(u url.URL) (int, error)
-	HeadStatusCode(u url.URL) (int, error)
+	Send(*http.Request) (int, error)
 }
 
 type simpleClient struct{}
 
-func (*simpleClient) HeadStatusCode(u url.URL) (int, error) {
-	res, err := http.Head(u.String())
+func (*simpleClient) Send(req *http.Request) (int, error) {
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	return res.StatusCode, err
-}
-
-func (*simpleClient) GetStatusCode(u url.URL) (int, error) {
-	res, err := http.Get(u.String())
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-	res.Body.Close()
+	defer res.Body.Close() // TODO: is the body nil if the method is HEAD?
 	return res.StatusCode, err
 }
