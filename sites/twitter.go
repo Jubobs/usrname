@@ -53,7 +53,7 @@ func (t *twitter) Home() string {
 }
 
 // See https://help.twitter.com/en/managing-your-account/twitter-username-rules
-func (*twitter) Validate(username string) []Violation {
+func (*twitter) CheckValid(username string) []Violation {
 	runeCount := utf8.RuneCountInString(username)
 	violations := []Violation{}
 	if runeCount < minLength {
@@ -84,7 +84,7 @@ func (*twitter) Validate(username string) []Violation {
 	return violations
 }
 
-func (t *twitter) IsAvailable(client Client) func(string) (bool, error) {
+func (t *twitter) CheckAvailable(client Client) func(string) (bool, error) {
 	return func(username string) (bool, error) {
 		req, err := twitterRequest(username)
 		statusCode, err := client.Send(req)

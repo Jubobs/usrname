@@ -27,7 +27,7 @@ func TestTwitterHome(t *testing.T) {
 	}
 }
 
-func TestTwitterValidate(t *testing.T) {
+func TestTwitterCheckValid(t *testing.T) {
 	cases := []struct {
 		username       string
 		noOfViolations int // TODO: refine when I introduce Violation type
@@ -42,9 +42,9 @@ func TestTwitterValidate(t *testing.T) {
 		{"longerthan15char", 1},
 		{"exotic^chars_and_too_long", 2},
 	}
-	const template = "(len(Twitter().Validate(%q))) is %d, but expected %d"
+	const template = "(len(Twitter().CheckValid(%q))) is %d, but expected %d"
 	for _, c := range cases {
-		if vs := s.Validate(c.username); len(vs) != c.noOfViolations {
+		if vs := s.CheckValid(c.username); len(vs) != c.noOfViolations {
 			t.Errorf(template, c.username, len(vs), c.noOfViolations)
 		}
 	}
@@ -56,11 +56,11 @@ func TestCheckNotFound(t *testing.T) {
 	const dummyUsername = "dummy"
 
 	// When
-	available, err := s.IsAvailable(client)(dummyUsername)
+	available, err := s.CheckAvailable(client)(dummyUsername)
 
 	// Then
 	if !(err == nil && available) {
-		const template = "Twitter().IsAvailable(%q) == (%t, %v), but expected (true, <nil>)"
+		const template = "Twitter().CheckAvailable(%q) == (%t, %v), but expected (true, <nil>)"
 		t.Errorf(template, dummyUsername, available, err)
 	}
 }
@@ -71,11 +71,11 @@ func TestCheckOk(t *testing.T) {
 	const dummyUsername = "dummy"
 
 	// When
-	available, err := s.IsAvailable(client)(dummyUsername)
+	available, err := s.CheckAvailable(client)(dummyUsername)
 
 	// Then
 	if err != nil || available {
-		const template = "Twitter().IsAvailable(%q) == (%t, %v), but expected (false, <nil>)"
+		const template = "Twitter().CheckAvailable(%q) == (%t, %v), but expected (false, <nil>)"
 		t.Errorf(template, dummyUsername, available, err)
 	}
 }
@@ -87,7 +87,7 @@ func TestCheckOther(t *testing.T) {
 	const dummyUsername = "dummy"
 
 	// When
-	_, err := s.IsAvailable(client)(dummyUsername) // irrelevant bool
+	_, err := s.CheckAvailable(client)(dummyUsername) // irrelevant bool
 
 	// Then
 	if !sites.IsUnexpectedStatusCodeError(err) {
@@ -103,7 +103,7 @@ func TestCheckNetworkError(t *testing.T) {
 	const dummyUsername = "dummy"
 
 	// When
-	_, err := s.IsAvailable(client)(dummyUsername) // irrelevant bool
+	_, err := s.CheckAvailable(client)(dummyUsername) // irrelevant bool
 
 	// Then
 	if !sites.IsNetworkError(err) {
