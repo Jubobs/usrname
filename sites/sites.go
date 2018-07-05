@@ -12,7 +12,7 @@ func All() []Site {
 		// Facebook(),
 		// GitHub(),
 		// Instagram(),
-		Twitter(),
+		NewTwitter(),
 	}
 }
 

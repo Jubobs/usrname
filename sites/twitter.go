@@ -8,7 +8,7 @@ import (
 	"unicode/utf8"
 )
 
-type twitter struct {
+type Twitter struct {
 	name      string
 	home      string
 	scheme    string
@@ -16,7 +16,7 @@ type twitter struct {
 	whitelist *unicode.RangeTable
 }
 
-var twitterImpl = twitter{
+var twitterImpl = Twitter{
 	name:   "Twitter",
 	home:   "https://twitter.com",
 	scheme: "https",
@@ -46,20 +46,20 @@ const (
 	illegalSubstring = "twitter"
 )
 
-func Twitter() Site {
+func NewTwitter() *Twitter {
 	return &twitterImpl
 }
 
-func (t *twitter) Name() string {
+func (t *Twitter) Name() string {
 	return t.name
 }
 
-func (t *twitter) Home() string {
+func (t *Twitter) Home() string {
 	return t.home
 }
 
 // See https://help.twitter.com/en/managing-your-account/twitter-username-rules
-func (t *twitter) CheckValid(username string) []Violation {
+func (t *Twitter) CheckValid(username string) []Violation {
 	runeCount := utf8.RuneCountInString(username)
 	violations := []Violation{}
 	if runeCount < minLength {
@@ -101,7 +101,7 @@ func (t *twitter) CheckValid(username string) []Violation {
 	return violations
 }
 
-func (t *twitter) CheckAvailable(client Client) func(string) (bool, error) {
+func (t *Twitter) CheckAvailable(client Client) func(string) (bool, error) {
 	return func(username string) (bool, error) {
 		req, err := twitterRequest(username)
 		statusCode, err := client.Send(req)

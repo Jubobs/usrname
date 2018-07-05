@@ -2,12 +2,13 @@ package sites_test
 
 import (
 	"errors"
-	"github.com/jubobs/username-checker/sites"
 	"net/http"
 	"testing"
+
+	"github.com/jubobs/username-checker/sites"
 )
 
-var s = sites.Twitter()
+var s = sites.NewTwitter()
 
 func TestTwitterName(t *testing.T) {
 	const expected = "Twitter"
