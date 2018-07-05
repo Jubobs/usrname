@@ -59,16 +59,16 @@ func (t *Twitter) Home() string {
 // See https://help.twitter.com/en/managing-your-account/twitter-username-rules
 func (t *Twitter) CheckValid(username string) []Violation {
 	vs := []Violation{}
-	if v := checkTooShort(username, t.minLength); v != nil {
+	if v := checkLongerThan(t.minLength)(username); v != nil {
 		vs = append(vs, v)
 	}
-	if v := checkIllegalChars(username, t.whitelist); v != nil {
+	if v := checkOnlyContains(t.whitelist)(username); v != nil {
 		vs = append(vs, v)
 	}
-	if v := checkIllegalSubstring(username, t.illegalSubstring); v != nil {
+	if v := checkNotContains(t.illegalSubstring)(username); v != nil {
 		vs = append(vs, v)
 	}
-	if v := checkTooLong(username, t.maxLength); v != nil {
+	if v := checkShorterThan(t.maxLength)(username); v != nil {
 		vs = append(vs, v)
 	}
 	return vs

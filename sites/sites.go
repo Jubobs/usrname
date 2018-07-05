@@ -22,52 +22,62 @@ func All() []Site {
 	}
 }
 
-func checkTooShort(s string, min int) (v Violation) {
-	count := utf8.RuneCountInString(s)
-	if count < min {
-		v = &TooShort{
-			Min:    min,
-			Actual: count,
+type checker func(string) Violation
+
+func checkLongerThan(min int) checker {
+	return func(username string) (v Violation) {
+		count := utf8.RuneCountInString(username)
+		if count < min {
+			v = &TooShort{
+				Min:    min,
+				Actual: count,
+			}
 		}
+		return
 	}
-	return
 }
 
-func checkIllegalChars(s string, whitelist *unicode.RangeTable) (v Violation) {
-	var inds []int
-	for i, r := range s {
-		if !unicode.In(r, whitelist) {
-			inds = append(inds, i)
+func checkOnlyContains(whitelist *unicode.RangeTable) checker {
+	return func(username string) (v Violation) {
+		var inds []int
+		for i, r := range username {
+			if !unicode.In(r, whitelist) {
+				inds = append(inds, i)
+			}
 		}
-	}
-	if len(inds) != 0 {
-		v = &IllegalChars{
-			At:        inds,
-			Whitelist: whitelist,
+		if len(inds) != 0 {
+			v = &IllegalChars{
+				At:        inds,
+				Whitelist: whitelist,
+			}
 		}
+		return
 	}
-	return
 }
 
-func checkIllegalSubstring(s string, sub string) (v Violation) {
-	if i := strings.Index(strings.ToLower(s), sub); i != -1 {
-		v = &IllegalSubstring{
-			Sub: sub,
-			At:  i,
+func checkNotContains(sub string) checker {
+	return func(username string) (v Violation) {
+		if i := strings.Index(strings.ToLower(username), sub); i != -1 {
+			v = &IllegalSubstring{
+				Sub: sub,
+				At:  i,
+			}
 		}
+		return
 	}
-	return
 }
 
-func checkTooLong(s string, max int) (v Violation) {
-	count := utf8.RuneCountInString(s)
-	if max < count {
-		v = &TooLong{
-			Max:    max,
-			Actual: count,
+func checkShorterThan(max int) checker {
+	return func(username string) (v Violation) {
+		count := utf8.RuneCountInString(username)
+		if max < count {
+			v = &TooLong{
+				Max:    max,
+				Actual: count,
+			}
 		}
+		return
 	}
-	return
 }
 
 // type resultsByName map[string]error
