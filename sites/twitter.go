@@ -3,16 +3,17 @@ package sites
 import (
 	"net/http"
 	"net/url"
-	"regexp"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 )
 
 type twitter struct {
-	name   string
-	home   string
-	scheme string
-	host   string
+	name      string
+	home      string
+	scheme    string
+	host      string
+	whitelist *unicode.RangeTable
 }
 
 var twitterImpl = twitter{
@@ -20,6 +21,14 @@ var twitterImpl = twitter{
 	home:   "https://twitter.com",
 	scheme: "https",
 	host:   "twitter.com",
+	whitelist: &unicode.RangeTable{
+		R16: []unicode.Range16{
+			{'0', '9', 1},
+			{'A', 'Z', 1},
+			{'_', '_', 1},
+			{'a', 'z', 1},
+		},
+	},
 }
 
 func twitterRequest(username string) (*http.Request, error) {
@@ -35,10 +44,7 @@ const (
 	minLength        = 1
 	maxLength        = 15
 	illegalSubstring = "twitter"
-	expectedPattern  = "^[A-Za-z0-9_]*$"
 )
-
-var expectedRegexp = regexp.MustCompile(expectedPattern)
 
 func Twitter() Site {
 	return &twitterImpl
@@ -53,7 +59,7 @@ func (t *twitter) Home() string {
 }
 
 // See https://help.twitter.com/en/managing-your-account/twitter-username-rules
-func (*twitter) CheckValid(username string) []Violation {
+func (t *twitter) CheckValid(username string) []Violation {
 	runeCount := utf8.RuneCountInString(username)
 	violations := []Violation{}
 	if runeCount < minLength {
@@ -63,10 +69,21 @@ func (*twitter) CheckValid(username string) []Violation {
 		}
 		violations = append(violations, &v)
 	}
-	if !expectedRegexp.MatchString(username) {
-		v := IllegalChars{}
+
+	var inds []int
+	for i, r := range username {
+		if !unicode.In(r, t.whitelist) {
+			inds = append(inds, i)
+		}
+	}
+	if len(inds) != 0 {
+		v := IllegalChars{
+			At:        inds,
+			Whitelist: t.whitelist,
+		}
 		violations = append(violations, &v)
 	}
+
 	if i := strings.Index(strings.ToLower(username), illegalSubstring); i != -1 {
 		v := IllegalSubstring{
 			Sub: illegalSubstring,

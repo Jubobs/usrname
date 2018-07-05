@@ -1,5 +1,7 @@
 package sites
 
+import "unicode"
+
 type Violation interface{}
 
 type TooShort struct {
@@ -15,4 +17,7 @@ type IllegalSubstring struct {
 	At  int
 }
 
-type IllegalChars struct{} // TODO: refine later (indicate indices of illegal chars)
+type IllegalChars struct {
+	At        []int
+	Whitelist *unicode.RangeTable
+}
