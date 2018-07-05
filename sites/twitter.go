@@ -3,24 +3,26 @@ package sites
 import (
 	"net/http"
 	"net/url"
-	"strings"
 	"unicode"
-	"unicode/utf8"
 )
 
 type Twitter struct {
-	name      string
-	home      string
-	scheme    string
-	host      string
-	whitelist *unicode.RangeTable
+	name             string
+	home             string
+	scheme           string
+	host             string
+	illegalSubstring string
+	whitelist        *unicode.RangeTable
+	minLength        int
+	maxLength        int
 }
 
 var twitterImpl = Twitter{
-	name:   "Twitter",
-	home:   "https://twitter.com",
-	scheme: "https",
-	host:   "twitter.com",
+	name:             "Twitter",
+	home:             "https://twitter.com",
+	scheme:           "https",
+	host:             "twitter.com",
+	illegalSubstring: "twitter",
 	whitelist: &unicode.RangeTable{
 		R16: []unicode.Range16{
 			{'0', '9', 1},
@@ -29,6 +31,8 @@ var twitterImpl = Twitter{
 			{'a', 'z', 1},
 		},
 	},
+	minLength: 1,
+	maxLength: 15,
 }
 
 func twitterRequest(username string) (*http.Request, error) {
@@ -39,12 +43,6 @@ func twitterRequest(username string) (*http.Request, error) {
 	}
 	return http.NewRequest("HEAD", u.String(), nil)
 }
-
-const (
-	minLength        = 1
-	maxLength        = 15
-	illegalSubstring = "twitter"
-)
 
 func NewTwitter() *Twitter {
 	return &twitterImpl
@@ -60,45 +58,20 @@ func (t *Twitter) Home() string {
 
 // See https://help.twitter.com/en/managing-your-account/twitter-username-rules
 func (t *Twitter) CheckValid(username string) []Violation {
-	runeCount := utf8.RuneCountInString(username)
-	violations := []Violation{}
-	if runeCount < minLength {
-		v := TooShort{
-			Min:    minLength,
-			Actual: runeCount,
-		}
-		violations = append(violations, &v)
+	vs := []Violation{}
+	if v := checkTooShort(username, t.minLength); v != nil {
+		vs = append(vs, v)
 	}
-
-	var inds []int
-	for i, r := range username {
-		if !unicode.In(r, t.whitelist) {
-			inds = append(inds, i)
-		}
+	if v := checkIllegalChars(username, t.whitelist); v != nil {
+		vs = append(vs, v)
 	}
-	if len(inds) != 0 {
-		v := IllegalChars{
-			At:        inds,
-			Whitelist: t.whitelist,
-		}
-		violations = append(violations, &v)
+	if v := checkIllegalSubstring(username, t.illegalSubstring); v != nil {
+		vs = append(vs, v)
 	}
-
-	if i := strings.Index(strings.ToLower(username), illegalSubstring); i != -1 {
-		v := IllegalSubstring{
-			Sub: illegalSubstring,
-			At:  i,
-		}
-		violations = append(violations, &v)
+	if v := checkTooLong(username, t.maxLength); v != nil {
+		vs = append(vs, v)
 	}
-	if maxLength < runeCount {
-		v := TooLong{
-			Max:    maxLength,
-			Actual: runeCount,
-		}
-		violations = append(violations, &v)
-	}
-	return violations
+	return vs
 }
 
 func (t *Twitter) CheckAvailable(client Client) func(string) (bool, error) {
