@@ -2,10 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/jubobs/username-checker/sites"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/jubobs/username-checker/sites"
 )
 
 var ss = sites.All()

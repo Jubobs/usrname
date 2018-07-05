@@ -3,8 +3,9 @@ package sites_test
 // see https://github.com/golang/go/issues/24895 for why "_test" in filename
 
 import (
-	"github.com/jubobs/username-checker/sites"
 	"net/http"
+
+	"github.com/jubobs/username-checker/sites"
 )
 
 type clientFunc func(*http.Request) (int, error)
