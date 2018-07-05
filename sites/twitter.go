@@ -17,33 +17,6 @@ type Twitter struct {
 	maxLength        int
 }
 
-var twitterImpl = Twitter{
-	name:             "Twitter",
-	home:             "https://twitter.com",
-	scheme:           "https",
-	host:             "twitter.com",
-	illegalSubstring: "twitter",
-	whitelist: &unicode.RangeTable{
-		R16: []unicode.Range16{
-			{'0', '9', 1},
-			{'A', 'Z', 1},
-			{'_', '_', 1},
-			{'a', 'z', 1},
-		},
-	},
-	minLength: 1,
-	maxLength: 15,
-}
-
-func twitterRequest(username string) (*http.Request, error) {
-	u := url.URL{
-		Scheme: twitterImpl.scheme,
-		Host:   twitterImpl.host,
-		Path:   username,
-	}
-	return http.NewRequest("HEAD", u.String(), nil)
-}
-
 func NewTwitter() *Twitter {
 	return &twitterImpl
 }
@@ -69,7 +42,12 @@ func (t *Twitter) CheckValid(username string) []Violation {
 
 func (t *Twitter) CheckAvailable(client Client) func(string) (bool, error) {
 	return func(username string) (bool, error) {
-		req, err := twitterRequest(username)
+		u := url.URL{
+			Scheme: twitterImpl.scheme,
+			Host:   twitterImpl.host,
+			Path:   username,
+		}
+		req, err := http.NewRequest("HEAD", u.String(), nil)
 		statusCode, err := client.Send(req)
 		if err != nil {
 			return false, &networkError{err}
@@ -83,4 +61,22 @@ func (t *Twitter) CheckAvailable(client Client) func(string) (bool, error) {
 			return false, &unexpectedStatusCodeError{statusCode}
 		}
 	}
+}
+
+var twitterImpl = Twitter{
+	name:             "Twitter",
+	home:             "https://twitter.com",
+	scheme:           "https",
+	host:             "twitter.com",
+	illegalSubstring: "twitter",
+	whitelist: &unicode.RangeTable{
+		R16: []unicode.Range16{
+			{'0', '9', 1},
+			{'A', 'Z', 1},
+			{'_', '_', 1},
+			{'a', 'z', 1},
+		},
+	},
+	minLength: 1,
+	maxLength: 15,
 }
