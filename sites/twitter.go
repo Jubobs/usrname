@@ -58,20 +58,13 @@ func (t *Twitter) Home() string {
 
 // See https://help.twitter.com/en/managing-your-account/twitter-username-rules
 func (t *Twitter) CheckValid(username string) []Violation {
-	vs := []Violation{}
-	if v := checkLongerThan(t.minLength)(username); v != nil {
-		vs = append(vs, v)
-	}
-	if v := checkOnlyContains(t.whitelist)(username); v != nil {
-		vs = append(vs, v)
-	}
-	if v := checkNotContains(t.illegalSubstring)(username); v != nil {
-		vs = append(vs, v)
-	}
-	if v := checkShorterThan(t.maxLength)(username); v != nil {
-		vs = append(vs, v)
-	}
-	return vs
+	return checkAll(
+		username,
+		checkLongerThan(t.minLength),
+		checkOnlyContains(t.whitelist),
+		checkNotContains(t.illegalSubstring),
+		checkShorterThan(t.maxLength),
+	)
 }
 
 func (t *Twitter) CheckAvailable(client Client) func(string) (bool, error) {

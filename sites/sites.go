@@ -80,6 +80,16 @@ func checkShorterThan(max int) checker {
 	}
 }
 
+func checkAll(username string, fs ...checker) []Violation {
+	vs := []Violation{}
+	for _, c := range fs {
+		if v := c(username); v != nil {
+			vs = append(vs, v)
+		}
+	}
+	return vs
+}
+
 // type resultsByName map[string]error
 
 // type result struct {
