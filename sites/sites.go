@@ -82,8 +82,8 @@ func checkShorterThan(max int) checker {
 
 func checkAll(username string, fs ...checker) []Violation {
 	vs := []Violation{}
-	for _, c := range fs {
-		if v := c(username); v != nil {
+	for _, f := range fs {
+		if v := f(username); v != nil {
 			vs = append(vs, v)
 		}
 	}
