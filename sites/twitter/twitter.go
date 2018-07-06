@@ -19,7 +19,7 @@ type twitter struct {
 	maxLength        int
 }
 
-func New() *twitter {
+func New() sites.Site {
 	return &twitterImpl
 }
 

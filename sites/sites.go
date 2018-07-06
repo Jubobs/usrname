@@ -36,7 +36,7 @@ func CheckOnlyContains(whitelist *unicode.RangeTable) checker {
 				ii = append(ii, i)
 			}
 		}
-		if len(inds) != 0 {
+		if len(ii) != 0 {
 			v = &IllegalChars{
 				At:        ii,
 				Whitelist: whitelist,
