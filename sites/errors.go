@@ -4,38 +4,23 @@ import (
 	"fmt"
 )
 
-type networkError struct {
-	cause error
+const (
+	nwErrTempl  = "sites: network error: %v"
+	uscErrTempl = "sites: unexpected status code: %d"
+)
+
+type NetworkError struct {
+	Cause error
 }
 
-func (err *networkError) Error() string {
-	const template = "sites: network error: %v"
-	return fmt.Sprintf(template, err.cause)
+func (err *NetworkError) Error() string {
+	return fmt.Sprintf(nwErrTempl, err.Cause)
 }
 
-func (err *networkError) Cause() error {
-	return err.cause
+type UnexpectedStatusCodeError struct {
+	StatusCode int
 }
 
-func IsNetworkError(err error) bool {
-	_, ok := err.(*networkError)
-	return ok
-}
-
-type unexpectedStatusCodeError struct {
-	statusCode int
-}
-
-func (err *unexpectedStatusCodeError) Error() string {
-	const template = "sites: unexpected status code: %d"
-	return fmt.Sprintf(template, err.statusCode)
-}
-
-func IsUnexpectedStatusCodeError(err error) bool {
-	_, ok := err.(*unexpectedStatusCodeError)
-	return ok
-}
-
-func (err *unexpectedStatusCodeError) StatusCode() int {
-	return err.statusCode
+func (err *UnexpectedStatusCodeError) Error() string {
+	return fmt.Sprintf(uscErrTempl, err.StatusCode)
 }

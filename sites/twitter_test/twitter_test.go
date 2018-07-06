@@ -5,31 +5,32 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/jubobs/username-checker/mock"
 	"github.com/jubobs/username-checker/sites"
 	"github.com/jubobs/username-checker/sites/twitter"
 )
 
 var s = twitter.New()
 
-func TestTwitterName(t *testing.T) {
+func TestName(t *testing.T) {
 	const expected = "Twitter"
 	actual := s.Name()
 	if actual != expected {
-		template := "sites.Twitter().Name() == %q, want %q"
+		template := "twitter.New().Name() == %q, want %q"
 		t.Errorf(template, actual, expected)
 	}
 }
 
-func TestTwitterHome(t *testing.T) {
+func TestHome(t *testing.T) {
 	const expected = "https://twitter.com"
 	actual := s.Home()
 	if actual != expected {
-		template := "sites.Twitter().Home() == %q, want %q"
+		template := "twitter.New().Home() == %q, want %q"
 		t.Errorf(template, actual, expected)
 	}
 }
 
-func TestTwitterCheckValid(t *testing.T) {
+func TestCheckValid(t *testing.T) {
 	cases := []struct {
 		username       string
 		noOfViolations int // TODO: refine when I introduce Violation type
@@ -44,7 +45,7 @@ func TestTwitterCheckValid(t *testing.T) {
 		{"longerthan15char", 1},
 		{"exotic^chars_and_too_long", 2},
 	}
-	const template = "(len(Twitter().CheckValid(%q))) is %d, but expected %d"
+	const template = "(len(twitter.New().CheckValid(%q))) is %d, but expected %d"
 	for _, c := range cases {
 		if vs := s.CheckValid(c.username); len(vs) != c.noOfViolations {
 			t.Errorf(template, c.username, len(vs), c.noOfViolations)
@@ -54,7 +55,7 @@ func TestTwitterCheckValid(t *testing.T) {
 
 func TestCheckNotFound(t *testing.T) {
 	// Given
-	client := mockClient(http.StatusNotFound, nil)
+	client := mock.Client(http.StatusNotFound, nil)
 	const dummyUsername = "dummy"
 
 	// When
@@ -62,14 +63,14 @@ func TestCheckNotFound(t *testing.T) {
 
 	// Then
 	if !(err == nil && available) {
-		const template = "Twitter().CheckAvailable(%q) == (%t, %v), but expected (true, <nil>)"
+		const template = "twitter.New().CheckAvailable(%q) == (%t, %v), but expected (true, <nil>)"
 		t.Errorf(template, dummyUsername, available, err)
 	}
 }
 
 func TestCheckOk(t *testing.T) {
 	// Given
-	client := mockClient(http.StatusOK, nil)
+	client := mock.Client(http.StatusOK, nil)
 	const dummyUsername = "dummy"
 
 	// When
@@ -77,7 +78,7 @@ func TestCheckOk(t *testing.T) {
 
 	// Then
 	if err != nil || available {
-		const template = "Twitter().CheckAvailable(%q) == (%t, %v), but expected (false, <nil>)"
+		const template = "twitter.New().CheckAvailable(%q) == (%t, %v), but expected (false, <nil>)"
 		t.Errorf(template, dummyUsername, available, err)
 	}
 }
@@ -85,31 +86,33 @@ func TestCheckOk(t *testing.T) {
 func TestCheckOther(t *testing.T) {
 	// Given
 	const statusCode = 999 // anything other than 200 and 404
-	client := mockClient(statusCode, nil)
+	client := mock.Client(statusCode, nil)
 	const dummyUsername = "dummy"
 
 	// When
 	_, err := s.CheckAvailable(client)(dummyUsername) // irrelevant bool
 
 	// Then
-	if !sites.IsUnexpectedStatusCodeError(err) {
-		const template = "got %v, but want an unexpected-status-code error"
-		t.Errorf(template, err)
+	if actual, ok := err.(*sites.UnexpectedStatusCodeError); !ok {
+		const template = "got %v, but want %v"
+		expected := &sites.UnexpectedStatusCodeError{statusCode}
+		t.Errorf(template, actual, expected)
 	}
 }
 
 func TestCheckNetworkError(t *testing.T) {
 	// Given
 	someError := errors.New("Oh no!")
-	client := mockClient(0, someError)
+	client := mock.Client(0, someError)
 	const dummyUsername = "dummy"
 
 	// When
 	_, err := s.CheckAvailable(client)(dummyUsername) // irrelevant bool
 
 	// Then
-	if !sites.IsNetworkError(err) {
-		const template = "got %v, but want network error"
-		t.Errorf(template, err)
+	if actual, ok := err.(*sites.NetworkError); !ok {
+		const template = "got %v, but want %v"
+		expected := &sites.NetworkError{someError}
+		t.Errorf(template, actual, expected)
 	}
 }

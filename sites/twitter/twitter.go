@@ -4,9 +4,11 @@ import (
 	"net/http"
 	"net/url"
 	"unicode"
+
+	"github.com/jubobs/username-checker/sites"
 )
 
-type Twitter struct {
+type twitter struct {
 	name             string
 	home             string
 	scheme           string
@@ -17,30 +19,30 @@ type Twitter struct {
 	maxLength        int
 }
 
-func New() *Twitter {
+func New() *twitter {
 	return &twitterImpl
 }
 
-func (t *Twitter) Name() string {
+func (t *twitter) Name() string {
 	return t.name
 }
 
-func (t *Twitter) Home() string {
+func (t *twitter) Home() string {
 	return t.home
 }
 
 // See https://help.twitter.com/en/managing-your-account/twitter-username-rules
-func (t *Twitter) CheckValid(username string) []Violation {
-	return checkAll(
+func (t *twitter) CheckValid(username string) []sites.Violation {
+	return sites.CheckAll(
 		username,
-		checkLongerThan(t.minLength),
-		checkOnlyContains(t.whitelist),
-		checkNotContains(t.illegalSubstring),
-		checkShorterThan(t.maxLength),
+		sites.CheckLongerThan(t.minLength),
+		sites.CheckOnlyContains(t.whitelist),
+		sites.CheckNotContains(t.illegalSubstring),
+		sites.CheckShorterThan(t.maxLength),
 	)
 }
 
-func (t *Twitter) CheckAvailable(client Client) func(string) (bool, error) {
+func (t *twitter) CheckAvailable(client sites.Client) func(string) (bool, error) {
 	return func(username string) (bool, error) {
 		u := url.URL{
 			Scheme: twitterImpl.scheme,
@@ -50,7 +52,7 @@ func (t *Twitter) CheckAvailable(client Client) func(string) (bool, error) {
 		req, err := http.NewRequest("HEAD", u.String(), nil)
 		statusCode, err := client.Send(req)
 		if err != nil {
-			return false, &networkError{err}
+			return false, &sites.NetworkError{err}
 		}
 		switch statusCode {
 		case http.StatusOK:
@@ -58,12 +60,12 @@ func (t *Twitter) CheckAvailable(client Client) func(string) (bool, error) {
 		case http.StatusNotFound:
 			return true, nil
 		default:
-			return false, &unexpectedStatusCodeError{statusCode}
+			return false, &sites.UnexpectedStatusCodeError{statusCode}
 		}
 	}
 }
 
-var twitterImpl = Twitter{
+var twitterImpl = twitter{
 	name:             "Twitter",
 	home:             "https://twitter.com",
 	scheme:           "https",

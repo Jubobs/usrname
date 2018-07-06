@@ -15,7 +15,7 @@ type Site interface {
 
 type checker func(string) Violation
 
-func checkLongerThan(min int) checker {
+func CheckLongerThan(min int) checker {
 	return func(username string) (v Violation) {
 		count := utf8.RuneCountInString(username)
 		if count < min {
@@ -28,7 +28,7 @@ func checkLongerThan(min int) checker {
 	}
 }
 
-func checkOnlyContains(whitelist *unicode.RangeTable) checker {
+func CheckOnlyContains(whitelist *unicode.RangeTable) checker {
 	return func(username string) (v Violation) {
 		var inds []int
 		for i, r := range username {
@@ -46,7 +46,7 @@ func checkOnlyContains(whitelist *unicode.RangeTable) checker {
 	}
 }
 
-func checkNotContains(sub string) checker {
+func CheckNotContains(sub string) checker {
 	return func(username string) (v Violation) {
 		if i := strings.Index(strings.ToLower(username), sub); i != -1 {
 			v = &IllegalSubstring{
@@ -58,7 +58,7 @@ func checkNotContains(sub string) checker {
 	}
 }
 
-func checkShorterThan(max int) checker {
+func CheckShorterThan(max int) checker {
 	return func(username string) (v Violation) {
 		count := utf8.RuneCountInString(username)
 		if max < count {
@@ -71,7 +71,7 @@ func checkShorterThan(max int) checker {
 	}
 }
 
-func checkAll(username string, fs ...checker) []Violation {
+func CheckAll(username string, fs ...checker) []Violation {
 	vs := []Violation{}
 	for _, f := range fs {
 		if v := f(username); v != nil {
