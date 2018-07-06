@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"unicode"
 
-	"github.com/jubobs/username-checker/sites"
+	"github.com/jubobs/whocanibe/sites"
 )
 
 type twitter struct {

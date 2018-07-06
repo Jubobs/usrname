@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/jubobs/username-checker/sites"
+	"github.com/jubobs/whocanibe/sites"
 )
 
 var client = sites.NewClient()

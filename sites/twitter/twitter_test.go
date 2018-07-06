@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jubobs/username-checker/mock"
-	"github.com/jubobs/username-checker/sites"
-	"github.com/jubobs/username-checker/sites/twitter"
+	"github.com/jubobs/whocanibe/mock"
+	"github.com/jubobs/whocanibe/sites"
+	"github.com/jubobs/whocanibe/sites/twitter"
 )
 
 var s = twitter.New()

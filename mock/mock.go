@@ -3,7 +3,7 @@ package mock
 import (
 	"net/http"
 
-	"github.com/jubobs/username-checker/sites"
+	"github.com/jubobs/whocanibe/sites"
 )
 
 type ClientFunc func(*http.Request) (int, error)
