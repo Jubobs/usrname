@@ -118,7 +118,7 @@ func TestCheckNotFound(t *testing.T) {
 	available, err := s.CheckAvailable(client)(dummyUsername)
 
 	// Then
-	if !(err == nil && available) {
+	if !(available && err == nil) {
 		const template = "%q, got (%t, %v), want (true, <nil>)"
 		t.Errorf(template, dummyUsername, available, err)
 	}
@@ -133,7 +133,7 @@ func TestCheckOk(t *testing.T) {
 	available, err := s.CheckAvailable(client)(dummyUsername)
 
 	// Then
-	if err != nil || available {
+	if !(!available && err == nil) {
 		const template = "%q, got (%t, %v), want (false, <nil>)"
 		t.Errorf(template, dummyUsername, available, err)
 	}
