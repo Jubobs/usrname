@@ -9,7 +9,6 @@ import (
 	"github.com/jubobs/username-checker/sites"
 )
 
-var ss = sites.All()
 var client = sites.NewClient()
 
 // var checkAll = sites.UniversalChecker(client, checkers)

@@ -1,4 +1,4 @@
-package sites
+package twitter
 
 import (
 	"net/http"
@@ -17,7 +17,7 @@ type Twitter struct {
 	maxLength        int
 }
 
-func NewTwitter() *Twitter {
+func New() *Twitter {
 	return &twitterImpl
 }
 

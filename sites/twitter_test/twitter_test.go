@@ -1,4 +1,4 @@
-package sites_test
+package twitter_test
 
 import (
 	"errors"
@@ -6,9 +6,10 @@ import (
 	"testing"
 
 	"github.com/jubobs/username-checker/sites"
+	"github.com/jubobs/username-checker/sites/twitter"
 )
 
-var s = sites.NewTwitter()
+var s = twitter.New()
 
 func TestTwitterName(t *testing.T) {
 	const expected = "Twitter"

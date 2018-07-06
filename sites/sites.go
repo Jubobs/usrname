@@ -13,15 +13,6 @@ type Site interface {
 	CheckAvailable(client Client) func(string) (bool, error)
 }
 
-func All() []Site {
-	return []Site{
-		// Facebook(),
-		// GitHub(),
-		// Instagram(),
-		NewTwitter(),
-	}
-}
-
 type checker func(string) Violation
 
 func checkLongerThan(min int) checker {
