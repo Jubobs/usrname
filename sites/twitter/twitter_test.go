@@ -151,7 +151,7 @@ func TestCheckOther(t *testing.T) {
 	// Then
 	if actual, ok := err.(*sites.UnexpectedStatusCodeError); !ok {
 		const template = "got %v, want %v"
-		expected := &sites.UnexpectedStatusCodeError{statusCode}
+		expected := &sites.UnexpectedStatusCodeError{StatusCode: statusCode}
 		t.Errorf(template, actual, expected)
 	}
 }
@@ -168,7 +168,7 @@ func TestCheckNetworkError(t *testing.T) {
 	// Then
 	if actual, ok := err.(*sites.NetworkError); !ok {
 		const template = "got %v, want %v"
-		expected := &sites.NetworkError{someError}
+		expected := &sites.NetworkError{Cause: someError}
 		t.Errorf(template, actual, expected)
 	}
 }

@@ -56,7 +56,7 @@ func (t *twitter) CheckAvailable(client sites.Client) func(string) (bool, error)
 		req, err := http.NewRequest("HEAD", u.String(), nil)
 		statusCode, err := client.Send(req)
 		if err != nil {
-			return false, &sites.NetworkError{err}
+			return false, &sites.NetworkError{Cause: err}
 		}
 		switch statusCode {
 		case http.StatusOK:
@@ -64,7 +64,7 @@ func (t *twitter) CheckAvailable(client sites.Client) func(string) (bool, error)
 		case http.StatusNotFound:
 			return true, nil
 		default:
-			return false, &sites.UnexpectedStatusCodeError{statusCode}
+			return false, &sites.UnexpectedStatusCodeError{StatusCode: statusCode}
 		}
 	}
 }
