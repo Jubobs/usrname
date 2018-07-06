@@ -31,6 +31,10 @@ func (t *twitter) Home() string {
 	return t.home
 }
 
+func (t *twitter) WhitelistChars() *unicode.RangeTable {
+	return t.whitelist
+}
+
 // See https://help.twitter.com/en/managing-your-account/twitter-username-rules
 func (t *twitter) CheckValid(username string) []sites.Violation {
 	return sites.CheckAll(

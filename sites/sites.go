@@ -11,6 +11,7 @@ type Site interface {
 	Home() string
 	CheckValid(username string) []Violation
 	CheckAvailable(client Client) func(string) (bool, error)
+	WhitelistChars() *unicode.RangeTable
 }
 
 type checker func(string) Violation

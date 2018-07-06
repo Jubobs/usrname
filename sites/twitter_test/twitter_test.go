@@ -3,6 +3,7 @@ package twitter_test
 import (
 	"errors"
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/jubobs/username-checker/mock"
@@ -31,24 +32,79 @@ func TestHome(t *testing.T) {
 }
 
 func TestCheckValid(t *testing.T) {
+	noViolations := []sites.Violation{}
 	cases := []struct {
-		username       string
-		noOfViolations int // TODO: refine when I introduce Violation type
+		username   string
+		violations []sites.Violation
 	}{
-		{"", 1},
-		{"0", 0},
-		{"exotic^chars", 1},
-		{"underscores_ok", 0},
-		{"twitter_no_ok", 1},
-		{"not_ok_TwitteR", 1},
-		{"admin_fine", 0},
-		{"longerthan15char", 1},
-		{"exotic^chars_and_too_long", 2},
+		{
+			"",
+			[]sites.Violation{
+				&sites.TooShort{
+					Min:    1,
+					Actual: 0,
+				},
+			},
+		}, {
+			"0",
+			noViolations,
+		}, {
+			"exotic^chars",
+			[]sites.Violation{
+				&sites.IllegalChars{
+					At:        []int{6},
+					Whitelist: s.WhitelistChars(),
+				},
+			},
+		}, {
+			"underscores_ok",
+			noViolations,
+		}, {
+			"twitter_no_ok",
+			[]sites.Violation{
+				&sites.IllegalSubstring{
+					Sub: "twitter",
+					At:  0,
+				},
+			},
+		}, {
+			"not_ok_TwitteR",
+			[]sites.Violation{
+				&sites.IllegalSubstring{
+					Sub: "twitter",
+					At:  7,
+				},
+			},
+		}, {
+			"admin_fine",
+			noViolations,
+		},
+		{
+			"longerthan15char",
+			[]sites.Violation{
+				&sites.TooLong{
+					Max:    15,
+					Actual: 16,
+				},
+			},
+		}, {
+			"exotic^chars_and_too_long",
+			[]sites.Violation{
+				&sites.IllegalChars{
+					At:        []int{6},
+					Whitelist: s.WhitelistChars(),
+				},
+				&sites.TooLong{
+					Max:    15,
+					Actual: 25,
+				},
+			},
+		},
 	}
-	const template = "(len(twitter.New().CheckValid(%q))) is %d, but expected %d"
+	const template = "%q, got %#v, want %#v"
 	for _, c := range cases {
-		if vs := s.CheckValid(c.username); len(vs) != c.noOfViolations {
-			t.Errorf(template, c.username, len(vs), c.noOfViolations)
+		if vv := s.CheckValid(c.username); !reflect.DeepEqual(vv, c.violations) {
+			t.Errorf(template, c.username, vv, c.violations)
 		}
 	}
 }
