@@ -17,7 +17,7 @@ func TestName(t *testing.T) {
 	const expected = "Twitter"
 	actual := s.Name()
 	if actual != expected {
-		template := "twitter.New().Name() == %q, want %q"
+		template := "got %q, want %q"
 		t.Errorf(template, actual, expected)
 	}
 }
@@ -26,7 +26,7 @@ func TestHome(t *testing.T) {
 	const expected = "https://twitter.com"
 	actual := s.Home()
 	if actual != expected {
-		template := "twitter.New().Home() == %q, want %q"
+		template := "got %q, want %q"
 		t.Errorf(template, actual, expected)
 	}
 }
@@ -53,7 +53,7 @@ func TestCheckValid(t *testing.T) {
 			[]sites.Violation{
 				&sites.IllegalChars{
 					At:        []int{6},
-					Whitelist: s.WhitelistChars(),
+					Whitelist: s.Whitelist(),
 				},
 			},
 		}, {
@@ -92,7 +92,7 @@ func TestCheckValid(t *testing.T) {
 			[]sites.Violation{
 				&sites.IllegalChars{
 					At:        []int{6},
-					Whitelist: s.WhitelistChars(),
+					Whitelist: s.Whitelist(),
 				},
 				&sites.TooLong{
 					Max:    15,
@@ -119,7 +119,7 @@ func TestCheckNotFound(t *testing.T) {
 
 	// Then
 	if !(err == nil && available) {
-		const template = "twitter.New().CheckAvailable(%q) == (%t, %v), but expected (true, <nil>)"
+		const template = "%q, got (%t, %v), want (true, <nil>)"
 		t.Errorf(template, dummyUsername, available, err)
 	}
 }
@@ -134,7 +134,7 @@ func TestCheckOk(t *testing.T) {
 
 	// Then
 	if err != nil || available {
-		const template = "twitter.New().CheckAvailable(%q) == (%t, %v), but expected (false, <nil>)"
+		const template = "%q, got (%t, %v), want (false, <nil>)"
 		t.Errorf(template, dummyUsername, available, err)
 	}
 }
@@ -150,7 +150,7 @@ func TestCheckOther(t *testing.T) {
 
 	// Then
 	if actual, ok := err.(*sites.UnexpectedStatusCodeError); !ok {
-		const template = "got %v, but want %v"
+		const template = "got %v, want %v"
 		expected := &sites.UnexpectedStatusCodeError{statusCode}
 		t.Errorf(template, actual, expected)
 	}
@@ -167,7 +167,7 @@ func TestCheckNetworkError(t *testing.T) {
 
 	// Then
 	if actual, ok := err.(*sites.NetworkError); !ok {
-		const template = "got %v, but want %v"
+		const template = "got %v, want %v"
 		expected := &sites.NetworkError{someError}
 		t.Errorf(template, actual, expected)
 	}

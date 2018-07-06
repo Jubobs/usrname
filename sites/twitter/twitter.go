@@ -31,7 +31,7 @@ func (t *twitter) Home() string {
 	return t.home
 }
 
-func (t *twitter) WhitelistChars() *unicode.RangeTable {
+func (t *twitter) Whitelist() *unicode.RangeTable {
 	return t.whitelist
 }
 
