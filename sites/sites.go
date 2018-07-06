@@ -30,15 +30,15 @@ func CheckLongerThan(min int) checker {
 
 func CheckOnlyContains(whitelist *unicode.RangeTable) checker {
 	return func(username string) (v Violation) {
-		var inds []int
+		var ii []int
 		for i, r := range username {
 			if !unicode.In(r, whitelist) {
-				inds = append(inds, i)
+				ii = append(ii, i)
 			}
 		}
 		if len(inds) != 0 {
 			v = &IllegalChars{
-				At:        inds,
+				At:        ii,
 				Whitelist: whitelist,
 			}
 		}
@@ -72,13 +72,13 @@ func CheckShorterThan(max int) checker {
 }
 
 func CheckAll(username string, fs ...checker) []Violation {
-	vs := []Violation{}
+	vv := []Violation{}
 	for _, f := range fs {
 		if v := f(username); v != nil {
-			vs = append(vs, v)
+			vv = append(vv, v)
 		}
 	}
-	return vs
+	return vv
 }
 
 // type resultsByName map[string]error
