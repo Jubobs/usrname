@@ -63,16 +63,16 @@ func TestCheckValid(t *testing.T) {
 			"twitter_no_ok",
 			[]sites.Violation{
 				&sites.IllegalSubstring{
-					Sub: "twitter",
-					At:  0,
+					Pattern: s.IllegalPattern().String(),
+					At:      []int{0, 7},
 				},
 			},
 		}, {
 			"not_ok_TwitteR",
 			[]sites.Violation{
 				&sites.IllegalSubstring{
-					Sub: "twitter",
-					At:  7,
+					Pattern: s.IllegalPattern().String(),
+					At:      []int{7, 14},
 				},
 			},
 		}, {

@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"strings"
+	"regexp"
 	"unicode"
 	"unicode/utf8"
 
@@ -41,12 +41,12 @@ func CheckOnlyContains(whitelist *unicode.RangeTable) checker {
 	}
 }
 
-func CheckNotContains(sub string) checker {
+func CheckNotMatches(re *regexp.Regexp) checker {
 	return func(username string) (v sites.Violation) {
-		if i := strings.Index(strings.ToLower(username), sub); i != -1 {
+		if ii := re.FindStringIndex(username); ii != nil {
 			v = &sites.IllegalSubstring{
-				Sub: sub,
-				At:  i,
+				Pattern: re.String(),
+				At:      ii,
 			}
 		}
 		return

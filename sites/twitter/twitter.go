@@ -3,6 +3,7 @@ package twitter
 import (
 	"net/http"
 	"net/url"
+	"regexp"
 	"unicode"
 
 	"github.com/jubobs/whocanibe/sites"
@@ -10,14 +11,32 @@ import (
 )
 
 type twitter struct {
-	name             string
-	home             string
-	scheme           string
-	host             string
-	illegalSubstring string
-	whitelist        *unicode.RangeTable
-	minLength        int
-	maxLength        int
+	name           string
+	home           string
+	scheme         string
+	host           string
+	illegalPattern *regexp.Regexp
+	whitelist      *unicode.RangeTable
+	minLength      int
+	maxLength      int
+}
+
+var twitterImpl = twitter{
+	name:           "Twitter",
+	home:           "https://twitter.com",
+	scheme:         "https",
+	host:           "twitter.com",
+	illegalPattern: regexp.MustCompile("(?i)twitter"),
+	whitelist: &unicode.RangeTable{
+		R16: []unicode.Range16{
+			{'0', '9', 1},
+			{'A', 'Z', 1},
+			{'_', '_', 1},
+			{'a', 'z', 1},
+		},
+	},
+	minLength: 1,
+	maxLength: 15,
 }
 
 func New() sites.Site {
@@ -31,6 +50,9 @@ func (t *twitter) Name() string {
 func (t *twitter) Home() string {
 	return t.home
 }
+func (t *twitter) IllegalPattern() *regexp.Regexp {
+	return t.illegalPattern
+}
 
 func (t *twitter) Whitelist() *unicode.RangeTable {
 	return t.whitelist
@@ -42,7 +64,7 @@ func (t *twitter) CheckValid(username string) []sites.Violation {
 		username,
 		internal.CheckLongerThan(t.minLength),
 		internal.CheckOnlyContains(t.whitelist),
-		internal.CheckNotContains(t.illegalSubstring),
+		internal.CheckNotMatches(t.illegalPattern),
 		internal.CheckShorterThan(t.maxLength),
 	)
 }
@@ -68,22 +90,4 @@ func (t *twitter) CheckAvailable(client sites.Client) func(string) (bool, error)
 			return false, &sites.UnexpectedStatusCodeError{StatusCode: statusCode}
 		}
 	}
-}
-
-var twitterImpl = twitter{
-	name:             "Twitter",
-	home:             "https://twitter.com",
-	scheme:           "https",
-	host:             "twitter.com",
-	illegalSubstring: "twitter",
-	whitelist: &unicode.RangeTable{
-		R16: []unicode.Range16{
-			{'0', '9', 1},
-			{'A', 'Z', 1},
-			{'_', '_', 1},
-			{'a', 'z', 1},
-		},
-	},
-	minLength: 1,
-	maxLength: 15,
 }

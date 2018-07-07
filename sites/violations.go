@@ -13,8 +13,8 @@ type TooLong struct {
 }
 
 type IllegalSubstring struct {
-	Sub string
-	At  int
+	At      []int
+	Pattern string
 }
 
 type IllegalChars struct {
