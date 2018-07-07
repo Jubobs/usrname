@@ -6,6 +6,7 @@ import (
 	"unicode"
 
 	"github.com/jubobs/whocanibe/sites"
+	"github.com/jubobs/whocanibe/sites/internal"
 )
 
 type twitter struct {
@@ -37,12 +38,12 @@ func (t *twitter) Whitelist() *unicode.RangeTable {
 
 // See https://help.twitter.com/en/managing-your-account/twitter-username-rules
 func (t *twitter) CheckValid(username string) []sites.Violation {
-	return sites.CheckAll(
+	return internal.CheckAll(
 		username,
-		sites.CheckLongerThan(t.minLength),
-		sites.CheckOnlyContains(t.whitelist),
-		sites.CheckNotContains(t.illegalSubstring),
-		sites.CheckShorterThan(t.maxLength),
+		internal.CheckLongerThan(t.minLength),
+		internal.CheckOnlyContains(t.whitelist),
+		internal.CheckNotContains(t.illegalSubstring),
+		internal.CheckShorterThan(t.maxLength),
 	)
 }
 
