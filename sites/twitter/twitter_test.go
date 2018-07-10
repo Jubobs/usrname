@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/fortytw2/leaktest"
 	"github.com/jubobs/whocanibe/mock"
 	"github.com/jubobs/whocanibe/sites"
 	"github.com/jubobs/whocanibe/sites/twitter"
@@ -14,6 +15,7 @@ import (
 var s = twitter.New()
 
 func TestName(t *testing.T) {
+	defer leaktest.Check(t)()
 	const expected = "Twitter"
 	actual := s.Name()
 	if actual != expected {
@@ -23,6 +25,7 @@ func TestName(t *testing.T) {
 }
 
 func TestHome(t *testing.T) {
+	defer leaktest.Check(t)()
 	const expected = "https://twitter.com"
 	actual := s.Home()
 	if actual != expected {
@@ -32,6 +35,7 @@ func TestHome(t *testing.T) {
 }
 
 func TestCheckValid(t *testing.T) {
+	defer leaktest.Check(t)()
 	noViolations := []sites.Violation{}
 	cases := []struct {
 		username   string
@@ -110,6 +114,7 @@ func TestCheckValid(t *testing.T) {
 }
 
 func TestCheckNotFound(t *testing.T) {
+	defer leaktest.Check(t)()
 	// Given
 	client := mock.Client(http.StatusNotFound, nil)
 	const dummyUsername = "dummy"
@@ -125,6 +130,7 @@ func TestCheckNotFound(t *testing.T) {
 }
 
 func TestCheckOk(t *testing.T) {
+	defer leaktest.Check(t)()
 	// Given
 	client := mock.Client(http.StatusOK, nil)
 	const dummyUsername = "dummy"
@@ -140,6 +146,7 @@ func TestCheckOk(t *testing.T) {
 }
 
 func TestCheckOther(t *testing.T) {
+	defer leaktest.Check(t)()
 	// Given
 	const statusCode = 999 // anything other than 200 and 404
 	client := mock.Client(statusCode, nil)
@@ -157,6 +164,7 @@ func TestCheckOther(t *testing.T) {
 }
 
 func TestCheckNetworkError(t *testing.T) {
+	defer leaktest.Check(t)()
 	// Given
 	someError := errors.New("Oh no!")
 	client := mock.Client(0, someError)
