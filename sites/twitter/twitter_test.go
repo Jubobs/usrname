@@ -34,7 +34,7 @@ func TestHome(t *testing.T) {
 	}
 }
 
-func TestCheckValid(t *testing.T) {
+func TestValidate(t *testing.T) {
 	defer leaktest.Check(t)()
 	noViolations := []sites.Violation{}
 	cases := []struct {
@@ -107,7 +107,7 @@ func TestCheckValid(t *testing.T) {
 	}
 	const template = "%q, got %#v, want %#v"
 	for _, c := range cases {
-		if vv := s.CheckValid(c.username); !reflect.DeepEqual(vv, c.violations) {
+		if vv := s.Validate(c.username); !reflect.DeepEqual(vv, c.violations) {
 			t.Errorf(template, c.username, vv, c.violations)
 		}
 	}
@@ -120,7 +120,7 @@ func TestCheckNotFound(t *testing.T) {
 	const dummyUsername = "dummy"
 
 	// When
-	available, err := s.CheckAvailable(client)(dummyUsername)
+	available, err := s.Check(client)(dummyUsername)
 
 	// Then
 	if !(available && err == nil) {
@@ -136,7 +136,7 @@ func TestCheckOk(t *testing.T) {
 	const dummyUsername = "dummy"
 
 	// When
-	available, err := s.CheckAvailable(client)(dummyUsername)
+	available, err := s.Check(client)(dummyUsername)
 
 	// Then
 	if !(!available && err == nil) {
@@ -153,7 +153,7 @@ func TestCheckOther(t *testing.T) {
 	const dummyUsername = "dummy"
 
 	// When
-	_, err := s.CheckAvailable(client)(dummyUsername) // irrelevant bool
+	_, err := s.Check(client)(dummyUsername) // irrelevant bool
 
 	// Then
 	if actual, ok := err.(*sites.UnexpectedStatusCodeError); !ok {
@@ -171,7 +171,7 @@ func TestCheckNetworkError(t *testing.T) {
 	const dummyUsername = "dummy"
 
 	// When
-	_, err := s.CheckAvailable(client)(dummyUsername) // irrelevant bool
+	_, err := s.Check(client)(dummyUsername) // irrelevant bool
 
 	// Then
 	if actual, ok := err.(*sites.NetworkError); !ok {

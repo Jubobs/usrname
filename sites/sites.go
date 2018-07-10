@@ -8,8 +8,17 @@ import (
 type Site interface {
 	Name() string
 	Home() string
-	CheckValid(username string) []Violation
-	CheckAvailable(client Client) func(string) (bool, error)
+	ProfilePage(username string) string
+}
+
+type Validator interface {
+	Site
+	Validate(username string) []Violation
 	IllegalPattern() *regexp.Regexp
 	Whitelist() *unicode.RangeTable
+}
+
+type Checker interface {
+	Validator
+	Check(client Client) func(string) (bool, error)
 }

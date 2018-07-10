@@ -39,7 +39,7 @@ var twitterImpl = twitter{
 	maxLength: 15,
 }
 
-func New() sites.Site {
+func New() sites.Checker {
 	return &twitterImpl
 }
 
@@ -50,6 +50,16 @@ func (t *twitter) Name() string {
 func (t *twitter) Home() string {
 	return t.home
 }
+
+func (t *twitter) ProfilePage(username string) string {
+	u := url.URL{
+		Scheme: twitterImpl.scheme,
+		Host:   twitterImpl.host,
+		Path:   username,
+	}
+	return u.String()
+}
+
 func (t *twitter) IllegalPattern() *regexp.Regexp {
 	return t.illegalPattern
 }
@@ -59,7 +69,7 @@ func (t *twitter) Whitelist() *unicode.RangeTable {
 }
 
 // See https://help.twitter.com/en/managing-your-account/twitter-username-rules
-func (t *twitter) CheckValid(username string) []sites.Violation {
+func (t *twitter) Validate(username string) []sites.Violation {
 	return internal.CheckAll(
 		username,
 		internal.CheckLongerThan(t.minLength),
@@ -69,14 +79,10 @@ func (t *twitter) CheckValid(username string) []sites.Violation {
 	)
 }
 
-func (t *twitter) CheckAvailable(client sites.Client) func(string) (bool, error) {
+func (t *twitter) Check(client sites.Client) func(string) (bool, error) {
 	return func(username string) (bool, error) {
-		u := url.URL{
-			Scheme: twitterImpl.scheme,
-			Host:   twitterImpl.host,
-			Path:   username,
-		}
-		req, err := http.NewRequest("HEAD", u.String(), nil)
+		u := t.ProfilePage(username)
+		req, err := http.NewRequest("HEAD", u, nil)
 		statusCode, err := client.Send(req)
 		if err != nil {
 			return false, &sites.NetworkError{Cause: err}
