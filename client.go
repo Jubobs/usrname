@@ -2,6 +2,8 @@ package usrname
 
 import (
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 func NewClient() Client {
@@ -17,7 +19,8 @@ type simpleClient struct{}
 func (*simpleClient) Send(req *http.Request) (int, error) {
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return http.StatusInternalServerError, err
+		err1 := errors.Wrap(err, "usrname: client failed")
+		return http.StatusInternalServerError, err1
 	}
 	defer res.Body.Close() // TODO: is the body nil if the method is HEAD?
 	return res.StatusCode, err
