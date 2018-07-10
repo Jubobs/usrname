@@ -8,9 +8,9 @@ import (
 	"github.com/jubobs/usrname"
 )
 
-type checker func(string) usrname.Violation
+type validate func(string) usrname.Violation
 
-func CheckLongerThan(min int) checker {
+func CheckLongerThan(min int) validate {
 	return func(username string) (v usrname.Violation) {
 		count := utf8.RuneCountInString(username)
 		if count < min {
@@ -23,7 +23,7 @@ func CheckLongerThan(min int) checker {
 	}
 }
 
-func CheckOnlyContains(whitelist *unicode.RangeTable) checker {
+func CheckOnlyContains(whitelist *unicode.RangeTable) validate {
 	return func(username string) (v usrname.Violation) {
 		var ii []int
 		for i, r := range username {
@@ -41,7 +41,7 @@ func CheckOnlyContains(whitelist *unicode.RangeTable) checker {
 	}
 }
 
-func CheckNotMatches(re *regexp.Regexp) checker {
+func CheckNotMatches(re *regexp.Regexp) validate {
 	return func(username string) (v usrname.Violation) {
 		if ii := re.FindStringIndex(username); ii != nil {
 			v = &usrname.IllegalSubstring{
@@ -53,7 +53,7 @@ func CheckNotMatches(re *regexp.Regexp) checker {
 	}
 }
 
-func CheckShorterThan(max int) checker {
+func CheckShorterThan(max int) validate {
 	return func(username string) (v usrname.Violation) {
 		count := utf8.RuneCountInString(username)
 		if max < count {
@@ -66,7 +66,7 @@ func CheckShorterThan(max int) checker {
 	}
 }
 
-func CheckAll(username string, fs ...checker) []usrname.Violation {
+func CheckAll(username string, fs ...validate) []usrname.Violation {
 	vv := []usrname.Violation{}
 	for _, f := range fs {
 		if v := f(username); v != nil {
