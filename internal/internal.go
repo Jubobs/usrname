@@ -5,16 +5,16 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/jubobs/whocanibe/sites"
+	"github.com/jubobs/usrname"
 )
 
-type checker func(string) sites.Violation
+type checker func(string) usrname.Violation
 
 func CheckLongerThan(min int) checker {
-	return func(username string) (v sites.Violation) {
+	return func(username string) (v usrname.Violation) {
 		count := utf8.RuneCountInString(username)
 		if count < min {
-			v = &sites.TooShort{
+			v = &usrname.TooShort{
 				Min:    min,
 				Actual: count,
 			}
@@ -24,7 +24,7 @@ func CheckLongerThan(min int) checker {
 }
 
 func CheckOnlyContains(whitelist *unicode.RangeTable) checker {
-	return func(username string) (v sites.Violation) {
+	return func(username string) (v usrname.Violation) {
 		var ii []int
 		for i, r := range username {
 			if !unicode.In(r, whitelist) {
@@ -32,7 +32,7 @@ func CheckOnlyContains(whitelist *unicode.RangeTable) checker {
 			}
 		}
 		if len(ii) != 0 {
-			v = &sites.IllegalChars{
+			v = &usrname.IllegalChars{
 				At:        ii,
 				Whitelist: whitelist,
 			}
@@ -42,9 +42,9 @@ func CheckOnlyContains(whitelist *unicode.RangeTable) checker {
 }
 
 func CheckNotMatches(re *regexp.Regexp) checker {
-	return func(username string) (v sites.Violation) {
+	return func(username string) (v usrname.Violation) {
 		if ii := re.FindStringIndex(username); ii != nil {
-			v = &sites.IllegalSubstring{
+			v = &usrname.IllegalSubstring{
 				Pattern: re.String(),
 				At:      ii,
 			}
@@ -54,10 +54,10 @@ func CheckNotMatches(re *regexp.Regexp) checker {
 }
 
 func CheckShorterThan(max int) checker {
-	return func(username string) (v sites.Violation) {
+	return func(username string) (v usrname.Violation) {
 		count := utf8.RuneCountInString(username)
 		if max < count {
-			v = &sites.TooLong{
+			v = &usrname.TooLong{
 				Max:    max,
 				Actual: count,
 			}
@@ -66,8 +66,8 @@ func CheckShorterThan(max int) checker {
 	}
 }
 
-func CheckAll(username string, fs ...checker) []sites.Violation {
-	vv := []sites.Violation{}
+func CheckAll(username string, fs ...checker) []usrname.Violation {
+	vv := []usrname.Violation{}
 	for _, f := range fs {
 		if v := f(username); v != nil {
 			vv = append(vv, v)

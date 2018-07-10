@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"unicode"
 
-	"github.com/jubobs/whocanibe/sites"
-	"github.com/jubobs/whocanibe/sites/internal"
+	"github.com/jubobs/usrname"
+	"github.com/jubobs/usrname/internal"
 )
 
 type twitter struct {
@@ -39,7 +39,7 @@ var twitterImpl = twitter{
 	maxLength: 15,
 }
 
-func New() sites.Checker {
+func New() usrname.Checker {
 	return &twitterImpl
 }
 
@@ -69,7 +69,7 @@ func (t *twitter) Whitelist() *unicode.RangeTable {
 }
 
 // See https://help.twitter.com/en/managing-your-account/twitter-username-rules
-func (t *twitter) Validate(username string) []sites.Violation {
+func (t *twitter) Validate(username string) []usrname.Violation {
 	return internal.CheckAll(
 		username,
 		internal.CheckLongerThan(t.minLength),
@@ -79,13 +79,13 @@ func (t *twitter) Validate(username string) []sites.Violation {
 	)
 }
 
-func (t *twitter) Check(client sites.Client) func(string) (bool, error) {
+func (t *twitter) Check(client usrname.Client) func(string) (bool, error) {
 	return func(username string) (bool, error) {
 		u := t.ProfilePage(username)
 		req, err := http.NewRequest("HEAD", u, nil)
 		statusCode, err := client.Send(req)
 		if err != nil {
-			return false, &sites.NetworkError{Cause: err}
+			return false, &usrname.NetworkError{Cause: err}
 		}
 		switch statusCode {
 		case http.StatusOK:
@@ -93,7 +93,7 @@ func (t *twitter) Check(client sites.Client) func(string) (bool, error) {
 		case http.StatusNotFound:
 			return true, nil
 		default:
-			return false, &sites.UnexpectedStatusCodeError{StatusCode: statusCode}
+			return false, &usrname.UnexpectedStatusCodeError{StatusCode: statusCode}
 		}
 	}
 }

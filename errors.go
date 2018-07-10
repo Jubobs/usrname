@@ -1,12 +1,12 @@
-package sites
+package usrname
 
 import (
 	"fmt"
 )
 
 const (
-	nwErrTempl  = "sites: network error: %v"
-	uscErrTempl = "sites: unexpected status code: %d"
+	nwErrTempl  = "usrname: network error: %v"
+	uscErrTempl = "usrname: unexpected status code: %d"
 )
 
 type NetworkError struct {

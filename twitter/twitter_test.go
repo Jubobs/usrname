@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/fortytw2/leaktest"
-	"github.com/jubobs/whocanibe/mock"
-	"github.com/jubobs/whocanibe/sites"
-	"github.com/jubobs/whocanibe/sites/twitter"
+	"github.com/jubobs/usrname"
+	"github.com/jubobs/usrname/mock"
+	"github.com/jubobs/usrname/twitter"
 )
 
 var s = twitter.New()
@@ -36,15 +36,15 @@ func TestHome(t *testing.T) {
 
 func TestValidate(t *testing.T) {
 	defer leaktest.Check(t)()
-	noViolations := []sites.Violation{}
+	noViolations := []usrname.Violation{}
 	cases := []struct {
 		username   string
-		violations []sites.Violation
+		violations []usrname.Violation
 	}{
 		{
 			"",
-			[]sites.Violation{
-				&sites.TooShort{
+			[]usrname.Violation{
+				&usrname.TooShort{
 					Min:    1,
 					Actual: 0,
 				},
@@ -54,8 +54,8 @@ func TestValidate(t *testing.T) {
 			noViolations,
 		}, {
 			"exotic^chars",
-			[]sites.Violation{
-				&sites.IllegalChars{
+			[]usrname.Violation{
+				&usrname.IllegalChars{
 					At:        []int{6},
 					Whitelist: s.Whitelist(),
 				},
@@ -65,16 +65,16 @@ func TestValidate(t *testing.T) {
 			noViolations,
 		}, {
 			"twitter_no_ok",
-			[]sites.Violation{
-				&sites.IllegalSubstring{
+			[]usrname.Violation{
+				&usrname.IllegalSubstring{
 					Pattern: s.IllegalPattern().String(),
 					At:      []int{0, 7},
 				},
 			},
 		}, {
 			"not_ok_TwitteR",
-			[]sites.Violation{
-				&sites.IllegalSubstring{
+			[]usrname.Violation{
+				&usrname.IllegalSubstring{
 					Pattern: s.IllegalPattern().String(),
 					At:      []int{7, 14},
 				},
@@ -85,20 +85,20 @@ func TestValidate(t *testing.T) {
 		},
 		{
 			"longerthan15char",
-			[]sites.Violation{
-				&sites.TooLong{
+			[]usrname.Violation{
+				&usrname.TooLong{
 					Max:    15,
 					Actual: 16,
 				},
 			},
 		}, {
 			"exotic^chars_and_too_long",
-			[]sites.Violation{
-				&sites.IllegalChars{
+			[]usrname.Violation{
+				&usrname.IllegalChars{
 					At:        []int{6},
 					Whitelist: s.Whitelist(),
 				},
-				&sites.TooLong{
+				&usrname.TooLong{
 					Max:    15,
 					Actual: 25,
 				},
@@ -156,9 +156,9 @@ func TestCheckOther(t *testing.T) {
 	_, err := s.Check(client)(dummyUsername) // irrelevant bool
 
 	// Then
-	if actual, ok := err.(*sites.UnexpectedStatusCodeError); !ok {
+	if actual, ok := err.(*usrname.UnexpectedStatusCodeError); !ok {
 		const template = "got %v, want %v"
-		expected := &sites.UnexpectedStatusCodeError{StatusCode: statusCode}
+		expected := &usrname.UnexpectedStatusCodeError{StatusCode: statusCode}
 		t.Errorf(template, actual, expected)
 	}
 }
@@ -174,9 +174,9 @@ func TestCheckNetworkError(t *testing.T) {
 	_, err := s.Check(client)(dummyUsername) // irrelevant bool
 
 	// Then
-	if actual, ok := err.(*sites.NetworkError); !ok {
+	if actual, ok := err.(*usrname.NetworkError); !ok {
 		const template = "got %v, want %v"
-		expected := &sites.NetworkError{Cause: someError}
+		expected := &usrname.NetworkError{Cause: someError}
 		t.Errorf(template, actual, expected)
 	}
 }
