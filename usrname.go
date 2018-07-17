@@ -5,13 +5,13 @@ import (
 	"unicode"
 )
 
-type Status int
+type Status string
 
 const (
-	UnknownStatus Status = iota
-	Invalid
-	Unavailable
-	Available
+	UnknownStatus Status = "unknown"
+	Invalid       Status = "invalid"
+	Unavailable   Status = "unavailable"
+	Available     Status = "available"
 )
 
 type Result struct {

@@ -161,7 +161,7 @@ func TestCheck(t *testing.T) {
 		actual := res.Status
 		expected := c.status
 		if actual != expected {
-			const template = "%s: %q, got %d, want %d"
+			const template = "%s: %q, got %q, want %q"
 			t.Errorf(template, c.label, c.username, actual, expected)
 		}
 	}
