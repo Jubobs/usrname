@@ -1,6 +1,7 @@
 package twitter
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -47,11 +48,7 @@ func (t *twitter) Name() string {
 	return t.name
 }
 
-func (t *twitter) Home() string {
-	return t.home
-}
-
-func (t *twitter) ProfilePage(username string) string {
+func (t *twitter) Url(username string) string {
 	u := url.URL{
 		Scheme: twitterImpl.scheme,
 		Host:   twitterImpl.host,
@@ -79,21 +76,41 @@ func (t *twitter) Validate(username string) []usrname.Violation {
 	)
 }
 
-func (t *twitter) Check(client usrname.Client) func(string) (bool, error) {
-	return func(username string) (bool, error) {
-		u := t.ProfilePage(username)
+func (t *twitter) Check(client usrname.Client) func(string) usrname.Result {
+	return func(username string) (res usrname.Result) {
+		res.Username = username
+		res.Checker = t
+
+		if vv := t.Validate(username); len(vv) != 0 {
+			res.Status = usrname.Invalid
+			const templ = "%q is invalid on %s"
+			res.Message = fmt.Sprintf(templ, username, t.Name())
+			return
+		}
+
+		u := t.Url(username)
 		req, err := http.NewRequest("HEAD", u, nil)
 		statusCode, err := client.Send(req)
 		if err != nil {
-			return false, &usrname.NetworkError{Cause: err}
+			res.Status = usrname.UnknownStatus
+			type timeout interface {
+				Timeout() bool
+			}
+			if err, ok := err.(timeout); ok && err.Timeout() {
+				res.Message = fmt.Sprintf("%s timed out", t.Name())
+			} else {
+				res.Message = "Something went wrong"
+			}
 		}
 		switch statusCode {
 		case http.StatusOK:
-			return false, nil
+			res.Status = usrname.Unavailable
 		case http.StatusNotFound:
-			return true, nil
+			res.Status = usrname.Available
 		default:
-			return false, &usrname.UnexpectedStatusCodeError{StatusCode: statusCode}
+			res.Status = usrname.UnknownStatus
+			res.Message = "Something went wrong"
 		}
+		return
 	}
 }

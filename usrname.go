@@ -5,10 +5,25 @@ import (
 	"unicode"
 )
 
+type Status int
+
+const (
+	UnknownStatus Status = iota
+	Invalid
+	Unavailable
+	Available
+)
+
+type Result struct {
+	Username string
+	Checker  Checker
+	Status   Status
+	Message  string
+}
+
 type Site interface {
 	Name() string
-	Home() string
-	ProfilePage(username string) string
+	Url(username string) string
 }
 
 type Validator interface {
@@ -20,5 +35,5 @@ type Validator interface {
 
 type Checker interface {
 	Validator
-	Check(client Client) func(string) (bool, error)
+	Check(client Client) func(string) Result
 }

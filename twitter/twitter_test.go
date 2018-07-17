@@ -24,10 +24,10 @@ func TestName(t *testing.T) {
 	}
 }
 
-func TestHome(t *testing.T) {
+func TestUrl(t *testing.T) {
 	defer leaktest.Check(t)()
-	const expected = "https://twitter.com"
-	actual := s.Home()
+	const expected = "https://twitter.com/foobar"
+	actual := s.Url("foobar")
 	if actual != expected {
 		template := "got %q, want %q"
 		t.Errorf(template, actual, expected)
@@ -113,70 +113,64 @@ func TestValidate(t *testing.T) {
 	}
 }
 
-func TestCheckNotFound(t *testing.T) {
+func TestCheck(t *testing.T) {
 	defer leaktest.Check(t)()
-	// Given
-	client := mock.Client(http.StatusNotFound, nil)
-	const dummyUsername = "dummy"
 
-	// When
-	available, err := s.Check(client)(dummyUsername)
+	cases := []struct {
+		label    string
+		username string
+		client   usrname.Client
+		status   usrname.Status
+	}{
+		{
+			label:    "invalid",
+			username: "_obviously_invalid!",
+			client:   nil,
+			status:   usrname.Invalid,
+		}, {
+			label:    "notfound",
+			username: "dummy",
+			client:   mock.Client(http.StatusNotFound, nil),
+			status:   usrname.Available,
+		}, {
+			label:    "ok",
+			username: "dummy",
+			client:   mock.Client(http.StatusOK, nil),
+			status:   usrname.Unavailable,
+		}, {
+			label:    "other",
+			username: "dummy",
+			client:   mock.Client(999, nil), // anything other than 200 or 404
+			status:   usrname.UnknownStatus,
+		}, {
+			label:    "clienterror",
+			username: "dummy",
+			client:   mock.Client(0, errors.New("Oh no!")),
+			status:   usrname.UnknownStatus,
+		}, {
+			label:    "timeouterror",
+			username: "dummy",
+			client:   mock.Client(0, &timeoutError{}),
+			status:   usrname.UnknownStatus,
+		},
+	}
 
-	// Then
-	if !(available && err == nil) {
-		const template = "%q, got (%t, %v), want (true, <nil>)"
-		t.Errorf(template, dummyUsername, available, err)
+	const template = "%q, got %d, want %d"
+	for _, c := range cases {
+		res := s.Check(c.client)(c.username)
+		actual := res.Status
+		expected := c.status
+		if actual != expected {
+			const template = "%s: %q, got %d, want %d"
+			t.Errorf(template, c.label, c.username, actual, expected)
+		}
 	}
 }
 
-func TestCheckOk(t *testing.T) {
-	defer leaktest.Check(t)()
-	// Given
-	client := mock.Client(http.StatusOK, nil)
-	const dummyUsername = "dummy"
-
-	// When
-	available, err := s.Check(client)(dummyUsername)
-
-	// Then
-	if !(!available && err == nil) {
-		const template = "%q, got (%t, %v), want (false, <nil>)"
-		t.Errorf(template, dummyUsername, available, err)
-	}
+type timeoutError struct {
+	error
 }
 
-func TestCheckOther(t *testing.T) {
-	defer leaktest.Check(t)()
-	// Given
-	const statusCode = 999 // anything other than 200 and 404
-	client := mock.Client(statusCode, nil)
-	const dummyUsername = "dummy"
-
-	// When
-	_, err := s.Check(client)(dummyUsername) // irrelevant bool
-
-	// Then
-	if actual, ok := err.(*usrname.UnexpectedStatusCodeError); !ok {
-		const template = "got %v, want %v"
-		expected := &usrname.UnexpectedStatusCodeError{StatusCode: statusCode}
-		t.Errorf(template, actual, expected)
-	}
-}
-
-func TestCheckNetworkError(t *testing.T) {
-	defer leaktest.Check(t)()
-	// Given
-	someError := errors.New("Oh no!")
-	client := mock.Client(0, someError)
-	const dummyUsername = "dummy"
-
-	// When
-	_, err := s.Check(client)(dummyUsername) // irrelevant bool
-
-	// Then
-	if actual, ok := err.(*usrname.NetworkError); !ok {
-		const template = "got %v, want %v"
-		expected := &usrname.NetworkError{Cause: someError}
-		t.Errorf(template, actual, expected)
-	}
+func (*timeoutError) Timeout() bool {
+	return true
 }
