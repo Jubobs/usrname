@@ -115,11 +115,13 @@ func TestValidate(t *testing.T) {
 			},
 		},
 	}
-	const template = "%s: Validate(%q), got %#v, want %#v"
+	const template = "Validate(%q), got %#v, want %#v"
 	for _, c := range cases {
-		if vv := s.Validate(c.username); !reflect.DeepEqual(vv, c.violations) {
-			t.Errorf(template, c.label, c.username, vv, c.violations)
-		}
+		t.Run(c.label, func(t *testing.T) {
+			if vv := s.Validate(c.username); !reflect.DeepEqual(vv, c.violations) {
+				t.Errorf(template, c.username, vv, c.violations)
+			}
+		})
 	}
 }
 
@@ -165,15 +167,16 @@ func TestCheck(t *testing.T) {
 		},
 	}
 
-	const template = "%q, got %d, want %d"
+	const template = "Check(%q), got %q, want %q"
 	for _, c := range cases {
-		res := s.Check(c.client)(c.username)
-		actual := res.Status
-		expected := c.status
-		if actual != expected {
-			const template = "%s: %q, got %q, want %q"
-			t.Errorf(template, c.label, c.username, actual, expected)
-		}
+		t.Run(c.label, func(t *testing.T) {
+			res := s.Check(c.client)(c.username)
+			actual := res.Status
+			expected := c.status
+			if actual != expected {
+				t.Errorf(template, c.username, actual, expected)
+			}
+		})
 	}
 }
 
