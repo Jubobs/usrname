@@ -24,10 +24,10 @@ func TestName(t *testing.T) {
 	}
 }
 
-func TestUrl(t *testing.T) {
+func TestLink(t *testing.T) {
 	defer leaktest.Check(t)()
 	const expected = "https://twitter.com/foobar"
-	actual := s.Url("foobar")
+	actual := s.Link("foobar")
 	if actual != expected {
 		template := "got %q, want %q"
 		t.Errorf(template, actual, expected)

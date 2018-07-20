@@ -46,7 +46,7 @@ func (t *twitter) Name() string {
 	return t.name
 }
 
-func (t *twitter) Url(username string) string {
+func (t *twitter) Link(username string) string {
 	u := url.URL{
 		Scheme: twitterImpl.scheme,
 		Host:   twitterImpl.host,
@@ -86,7 +86,7 @@ func (t *twitter) Check(client usrname.Client) func(string) usrname.Result {
 			return
 		}
 
-		u := t.Url(username)
+		u := t.Link(username)
 		req, err := http.NewRequest("HEAD", u, nil)
 		statusCode, err := client.Send(req)
 		if err != nil {

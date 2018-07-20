@@ -23,7 +23,7 @@ type Result struct {
 
 type Site interface {
 	Name() string
-	Url(username string) string
+	Link(username string) string
 }
 
 type Validator interface {
