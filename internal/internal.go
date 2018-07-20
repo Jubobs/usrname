@@ -2,6 +2,7 @@ package internal
 
 import (
 	"regexp"
+	"strings"
 	"unicode"
 	"unicode/utf8"
 
@@ -35,6 +36,39 @@ func CheckOnlyContains(whitelist *unicode.RangeTable) validate {
 			v = &usrname.IllegalChars{
 				At:        ii,
 				Whitelist: whitelist,
+			}
+		}
+		return
+	}
+}
+
+func CheckIllegalPrefix(prefix string) validate {
+	return func(username string) (v usrname.Violation) {
+		if strings.HasPrefix(username, prefix) {
+			v = &usrname.IllegalPrefix{
+				Pattern: prefix,
+			}
+		}
+		return
+	}
+}
+
+func CheckIllegalSubstring(sub string) validate {
+	return func(username string) (v usrname.Violation) {
+		if strings.Contains(username, sub) {
+			v = &usrname.IllegalSubstring{
+				Pattern: sub,
+			}
+		}
+		return
+	}
+}
+
+func CheckIllegalSuffix(suffix string) validate {
+	return func(username string) (v usrname.Violation) {
+		if strings.HasSuffix(username, suffix) {
+			v = &usrname.IllegalSuffix{
+				Pattern: suffix,
 			}
 		}
 		return
