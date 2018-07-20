@@ -38,10 +38,12 @@ func TestValidate(t *testing.T) {
 	defer leaktest.Check(t)()
 	noViolations := []usrname.Violation{}
 	cases := []struct {
+		label      string
 		username   string
 		violations []usrname.Violation
 	}{
 		{
+			"empty",
 			"",
 			[]usrname.Violation{
 				&usrname.TooShort{
@@ -50,9 +52,11 @@ func TestValidate(t *testing.T) {
 				},
 			},
 		}, {
+			"onechar",
 			"0",
 			noViolations,
 		}, {
+			"exoticchars",
 			"exotic^chars",
 			[]usrname.Violation{
 				&usrname.IllegalChars{
@@ -61,9 +65,11 @@ func TestValidate(t *testing.T) {
 				},
 			},
 		}, {
-			"underscores_ok",
+			"underscores",
+			"__init__",
 			noViolations,
 		}, {
+			"twitterlowercase",
 			"twitter_no_ok",
 			[]usrname.Violation{
 				&usrname.IllegalSubstring{
@@ -72,6 +78,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 		}, {
+			"twittermixedcase",
 			"not_ok_TwitteR",
 			[]usrname.Violation{
 				&usrname.IllegalSubstring{
@@ -80,11 +87,13 @@ func TestValidate(t *testing.T) {
 				},
 			},
 		}, {
+			"admin",
 			"admin_fine",
 			noViolations,
 		},
 		{
-			"longerthan15char",
+			"toolong",
+			"0123456789012345",
 			[]usrname.Violation{
 				&usrname.TooLong{
 					Max:    15,
@@ -92,6 +101,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 		}, {
+			"exoticcharstoolong",
 			"exotic^chars_and_too_long",
 			[]usrname.Violation{
 				&usrname.IllegalChars{
@@ -105,10 +115,10 @@ func TestValidate(t *testing.T) {
 			},
 		},
 	}
-	const template = "%q, got %#v, want %#v"
+	const template = "%s: Validate(%q), got %#v, want %#v"
 	for _, c := range cases {
 		if vv := s.Validate(c.username); !reflect.DeepEqual(vv, c.violations) {
-			t.Errorf(template, c.username, vv, c.violations)
+			t.Errorf(template, c.label, c.username, vv, c.violations)
 		}
 	}
 }

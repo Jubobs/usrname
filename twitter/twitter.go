@@ -13,7 +13,6 @@ import (
 
 type twitter struct {
 	name           string
-	home           string
 	scheme         string
 	host           string
 	illegalPattern *regexp.Regexp
@@ -24,7 +23,6 @@ type twitter struct {
 
 var twitterImpl = twitter{
 	name:           "Twitter",
-	home:           "https://twitter.com",
 	scheme:         "https",
 	host:           "twitter.com",
 	illegalPattern: regexp.MustCompile("(?i)twitter"),
