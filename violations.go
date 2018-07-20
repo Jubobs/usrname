@@ -30,12 +30,27 @@ type IllegalSubstring struct {
 	Pattern string
 }
 
+func (v *IllegalSubstring) String() string {
+	const templ = "&IllegalSubstring{%q}"
+	return fmt.Sprintf(templ, v.Pattern)
+}
+
 type IllegalPrefix struct {
 	Pattern string
 }
 
+func (v *IllegalPrefix) String() string {
+	const templ = "&IllegalPrefix{%q}"
+	return fmt.Sprintf(templ, v.Pattern)
+}
+
 type IllegalSuffix struct {
 	Pattern string
+}
+
+func (v *IllegalSuffix) String() string {
+	const templ = "&IllegalSuffix{%q}"
+	return fmt.Sprintf(templ, v.Pattern)
 }
 
 type IllegalChars struct {
