@@ -12,24 +12,22 @@ import (
 )
 
 type disqus struct {
-	name             string
-	scheme           string
-	host             string
-	illegalPrefix    string
-	illegalSuffix    string
-	illegalSubstring string
-	whitelist        *unicode.RangeTable
-	minLength        int
-	maxLength        int
+	name          string
+	scheme        string
+	host          string
+	illegalPrefix string
+	illegalSuffix string
+	whitelist     *unicode.RangeTable
+	minLength     int
+	maxLength     int
 }
 
 var disqusImpl = disqus{
-	name:             "Disqus",
-	scheme:           "https",
-	host:             "disqus.com",
-	illegalPrefix:    "_",
-	illegalSuffix:    "_",
-	illegalSubstring: "..",
+	name:          "Disqus",
+	scheme:        "https",
+	host:          "disqus.com",
+	illegalPrefix: "_",
+	illegalSuffix: "_",
 	whitelist: &unicode.RangeTable{
 		R16: []unicode.Range16{
 			{'0', '9', 1},
@@ -92,7 +90,7 @@ func (t *disqus) Check(client usrname.Client) func(string) usrname.Result {
 		}
 
 		u := t.Link(username)
-		req, err := http.NewRequest("GET", u, nil)
+		req, err := http.NewRequest("HEAD", u, nil)
 		statusCode, err := client.Send(req)
 		if err != nil {
 			res.Status = usrname.UnknownStatus
