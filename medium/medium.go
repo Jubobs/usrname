@@ -85,7 +85,7 @@ func (t *medium) Check(client usrname.Client) func(string) usrname.Result {
 		}
 
 		u := t.Link(username)
-		req, err := http.NewRequest("GET", u, nil)
+		req, err := http.NewRequest("HEAD", u, nil)
 		statusCode, err := client.Send(req)
 		if err != nil {
 			res.Status = usrname.UnknownStatus
