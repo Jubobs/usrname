@@ -109,3 +109,12 @@ func CheckAll(username string, fs ...validate) []usrname.Violation {
 	}
 	return vv
 }
+
+func IsTimeout(err error) bool {
+	type timeout interface {
+		Timeout() bool
+		error
+	}
+	err1, ok := err.(timeout)
+	return ok && err1.Timeout()
+}

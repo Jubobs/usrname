@@ -71,42 +71,51 @@ func (t *reddit) Validate(username string) []usrname.Violation {
 	)
 }
 
-func (t *reddit) Check(client usrname.Client) func(string) usrname.Result {
-	return func(username string) (res usrname.Result) {
-		res.Username = username
-		res.Checker = t
+func (c *reddit) Check(client usrname.Client) func(string) usrname.Result {
+	return func(username string) (r usrname.Result) {
+		r.Username = username
+		r.Checker = c
 
-		if vv := t.Validate(username); len(vv) != 0 {
-			res.Status = usrname.Invalid
+		if vv := c.Validate(username); len(vv) != 0 {
+			r.Status = usrname.Invalid
 			const templ = "%q is invalid on %s"
-			res.Message = fmt.Sprintf(templ, username, t.Name())
+			r.Message = fmt.Sprintf(templ, username, c.Name())
 			return
 		}
 
-		u := t.Link(username)
-		req, err := http.NewRequest("HEAD", u, nil)
-		req.Header.Add("User-Agent", "Mozilla/5.0") // to avoid rate limiting
-		statusCode, err := client.Send(req)
+		req := request(username)
+		res, err := client.Do(req)
 		if err != nil {
-			res.Status = usrname.UnknownStatus
+			r.Status = usrname.UnknownStatus
 			type timeout interface {
 				Timeout() bool
 			}
 			if err, ok := err.(timeout); ok && err.Timeout() {
-				res.Message = fmt.Sprintf("%s timed out", t.Name())
+				r.Message = fmt.Sprintf("%s timed out", c.Name())
 			} else {
-				res.Message = "Something went wrong"
+				r.Message = "Something went wrong"
 			}
+			return
 		}
-		switch statusCode {
+		switch res.StatusCode {
 		case http.StatusOK:
-			res.Status = usrname.Unavailable
+			r.Status = usrname.Unavailable
 		case http.StatusNotFound:
-			res.Status = usrname.Available
+			r.Status = usrname.Available
 		default:
-			res.Status = usrname.UnknownStatus
-			res.Message = "Something went wrong"
+			r.Status = usrname.UnknownStatus
+			r.Message = fmt.Sprintf("unsupported status code %d", res.StatusCode)
 		}
 		return
 	}
+}
+
+func request(username string) *http.Request {
+	l := redditImpl.Link(username)
+	req, err := http.NewRequest("HEAD", l, nil)
+	if err != nil {
+		panic(err) // should never happen
+	}
+	req.Header.Add("User-Agent", "Mozilla/5.0") // to avoid rate limiting
+	return req
 }

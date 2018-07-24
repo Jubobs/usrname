@@ -78,40 +78,47 @@ func (t *disqus) Validate(username string) []usrname.Violation {
 }
 
 func (t *disqus) Check(client usrname.Client) func(string) usrname.Result {
-	return func(username string) (res usrname.Result) {
-		res.Username = username
-		res.Checker = t
+	return func(username string) (r usrname.Result) {
+		r.Username = username
+		r.Checker = t
 
 		if vv := t.Validate(username); len(vv) != 0 {
-			res.Status = usrname.Invalid
+			r.Status = usrname.Invalid
 			const templ = "%q is invalid on %s"
-			res.Message = fmt.Sprintf(templ, username, t.Name())
+			r.Message = fmt.Sprintf(templ, username, t.Name())
 			return
 		}
 
-		u := t.Link(username)
-		req, err := http.NewRequest("HEAD", u, nil)
-		statusCode, err := client.Send(req)
+		req := request(username)
+		res, err := client.Do(req)
 		if err != nil {
-			res.Status = usrname.UnknownStatus
-			type timeout interface {
-				Timeout() bool
-			}
-			if err, ok := err.(timeout); ok && err.Timeout() {
-				res.Message = fmt.Sprintf("%s timed out", t.Name())
+			r.Status = usrname.UnknownStatus
+			if internal.IsTimeout(err) {
+				r.Message = fmt.Sprintf("%s timed out", t.Name())
 			} else {
-				res.Message = "Something went wrong"
+				r.Message = "Something went wrong"
 			}
+			return
 		}
-		switch statusCode {
+
+		switch res.StatusCode {
 		case http.StatusOK:
-			res.Status = usrname.Unavailable
+			r.Status = usrname.Unavailable
 		case http.StatusNotFound:
-			res.Status = usrname.Available
+			r.Status = usrname.Available
 		default:
-			res.Status = usrname.UnknownStatus
-			res.Message = "Something went wrong"
+			r.Status = usrname.UnknownStatus
+			r.Message = fmt.Sprintf("unexpected status code %d", res.StatusCode)
 		}
 		return
 	}
+}
+
+func request(username string) *http.Request {
+	l := disqusImpl.Link(username)
+	req, err := http.NewRequest("HEAD", l, nil)
+	if err != nil {
+		panic(err) // should never happen
+	}
+	return req
 }

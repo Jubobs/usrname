@@ -17,20 +17,22 @@ func NewClient() Client {
 	return &simpleClient{}
 }
 
+// Client implementations must close the Body of the Response (if non-nil)
+// before returning it.
 type Client interface {
-	Send(*http.Request) (int, error)
+	Do(*http.Request) (*http.Response, error)
 }
 
 type simpleClient struct{}
 
-func (*simpleClient) Send(req *http.Request) (int, error) {
+func (*simpleClient) Do(req *http.Request) (*http.Response, error) {
 	client := http.DefaultClient
 	client.Timeout = timeout
 	res, err := client.Do(req)
 	if err != nil {
-		err1 := errors.Wrap(err, "usrname: client failed")
-		return http.StatusInternalServerError, err1
+		err := errors.Wrap(err, "usrname: client failed")
+		return nil, err
 	}
 	defer res.Body.Close()
-	return res.StatusCode, nil
+	return res, nil
 }

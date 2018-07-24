@@ -8,7 +8,7 @@ import (
 
 	"github.com/fortytw2/leaktest"
 	"github.com/jubobs/usrname"
-	"github.com/jubobs/usrname/mock"
+	"github.com/jubobs/usrname/mockclient"
 	"github.com/jubobs/usrname/twitter"
 )
 
@@ -143,28 +143,51 @@ func TestCheck(t *testing.T) {
 		}, {
 			label:    "notfound",
 			username: "dummy",
-			client:   mock.Client(http.StatusNotFound, nil),
+			client:   mockclient.WithStatusCode(http.StatusNotFound),
 			status:   usrname.Available,
 		}, {
 			label:    "ok",
 			username: "dummy",
-			client:   mock.Client(http.StatusOK, nil),
+			client:   mockclient.WithStatusCode(http.StatusOK),
 			status:   usrname.Unavailable,
 		}, {
-			label:    "other",
+			label:    "other", // than 200, 302, 404
 			username: "dummy",
-			client:   mock.Client(999, nil), // anything other than 200 or 404
+			client:   mockclient.WithStatusCode(999),
 			status:   usrname.UnknownStatus,
 		}, {
 			label:    "clienterror",
 			username: "dummy",
-			client:   mock.Client(0, errors.New("Oh no!")),
+			client:   mockclient.WithError(errors.New("Oh no!")),
 			status:   usrname.UnknownStatus,
 		}, {
 			label:    "timeouterror",
 			username: "dummy",
-			client:   mock.Client(0, &timeoutError{}),
+			client:   mockclient.WithError(&timeoutError{}),
 			status:   usrname.UnknownStatus,
+		}, {
+			label:    "foundnolocation",
+			username: "dummy",
+			client:   mockclient.WithStatusCode(http.StatusFound),
+			status:   usrname.UnknownStatus,
+		}, {
+			label:    "foundunexpectedlocation",
+			username: "dummy",
+			client: mockclient.WithStatusCodeAndHeader(
+				http.StatusFound,
+				"location",
+				"http://unexpected",
+			),
+			status: usrname.UnknownStatus,
+		}, {
+			label:    "foundexpectedlocation",
+			username: "dummy",
+			client: mockclient.WithStatusCodeAndHeader(
+				http.StatusFound,
+				"location",
+				"https://twitter.com/account/suspended",
+			),
+			status: usrname.Unavailable,
 		},
 	}
 
