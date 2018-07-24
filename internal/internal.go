@@ -9,23 +9,23 @@ import (
 	"github.com/jubobs/usrname"
 )
 
-type validate func(string) usrname.Violation
+type validate1 func(string) usrname.Violation
 
-func CheckLongerThan(min int) validate {
-	return func(username string) (v usrname.Violation) {
+func CheckLongerThan(min int) validate1 {
+	return func(username string) usrname.Violation {
 		count := utf8.RuneCountInString(username)
 		if count < min {
-			v = &usrname.TooShort{
+			return &usrname.TooShort{
 				Min:    min,
 				Actual: count,
 			}
 		}
-		return
+		return nil
 	}
 }
 
-func CheckOnlyContains(whitelist *unicode.RangeTable) validate {
-	return func(username string) (v usrname.Violation) {
+func CheckOnlyContains(whitelist *unicode.RangeTable) validate1 {
+	return func(username string) usrname.Violation {
 		var ii []int
 		for i, r := range username {
 			if !unicode.In(r, whitelist) {
@@ -33,27 +33,27 @@ func CheckOnlyContains(whitelist *unicode.RangeTable) validate {
 			}
 		}
 		if len(ii) != 0 {
-			v = &usrname.IllegalChars{
+			return &usrname.IllegalChars{
 				At:        ii,
 				Whitelist: whitelist,
 			}
 		}
-		return
+		return nil
 	}
 }
 
-func CheckIllegalPrefix(prefix string) validate {
-	return func(username string) (v usrname.Violation) {
+func CheckIllegalPrefix(prefix string) validate1 {
+	return func(username string) usrname.Violation {
 		if strings.HasPrefix(username, prefix) {
-			v = &usrname.IllegalPrefix{
+			return &usrname.IllegalPrefix{
 				Pattern: prefix,
 			}
 		}
-		return
+		return nil
 	}
 }
 
-func CheckIllegalSubstring(sub string) validate {
+func CheckIllegalSubstring(sub string) validate1 {
 	return func(username string) (v usrname.Violation) {
 		if strings.Contains(username, sub) {
 			v = &usrname.IllegalSubstring{
@@ -64,7 +64,7 @@ func CheckIllegalSubstring(sub string) validate {
 	}
 }
 
-func CheckIllegalSuffix(suffix string) validate {
+func CheckIllegalSuffix(suffix string) validate1 {
 	return func(username string) (v usrname.Violation) {
 		if strings.HasSuffix(username, suffix) {
 			v = &usrname.IllegalSuffix{
@@ -75,7 +75,7 @@ func CheckIllegalSuffix(suffix string) validate {
 	}
 }
 
-func CheckNotMatches(re *regexp.Regexp) validate {
+func CheckNotMatches(re *regexp.Regexp) validate1 {
 	return func(username string) (v usrname.Violation) {
 		if ii := re.FindStringIndex(username); ii != nil {
 			v = &usrname.IllegalSubstring{
@@ -87,7 +87,7 @@ func CheckNotMatches(re *regexp.Regexp) validate {
 	}
 }
 
-func CheckShorterThan(max int) validate {
+func CheckShorterThan(max int) validate1 {
 	return func(username string) (v usrname.Violation) {
 		count := utf8.RuneCountInString(username)
 		if max < count {
@@ -100,7 +100,7 @@ func CheckShorterThan(max int) validate {
 	}
 }
 
-func CheckAll(username string, fs ...validate) []usrname.Violation {
+func CheckAll(username string, fs ...validate1) []usrname.Violation {
 	vv := []usrname.Violation{}
 	for _, f := range fs {
 		if v := f(username); v != nil {

@@ -1,54 +1,51 @@
-package twitter
+package facebook
 
 import (
 	"fmt"
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
 	"unicode"
 
 	"github.com/jubobs/usrname"
 	"github.com/jubobs/usrname/internal"
 )
 
-type twitter struct {
-	name           string
-	scheme         string
-	host           string
-	suspended      string
-	illegalPattern *regexp.Regexp
-	whitelist      *unicode.RangeTable
-	minLength      int
-	maxLength      int
+type facebook struct {
+	name      string
+	scheme    string
+	host      string
+	whitelist *unicode.RangeTable
+	minLength int
+	maxLength int
 }
 
-var twitterImpl = twitter{
-	name:           "Twitter",
-	scheme:         "https",
-	host:           "twitter.com",
-	suspended:      "https://twitter.com/account/suspended",
-	illegalPattern: regexp.MustCompile("(?i)twitter"),
+var facebookImpl = facebook{
+	name:   "facebook",
+	scheme: "https",
+	host:   "www.facebook.com",
 	whitelist: &unicode.RangeTable{
 		R16: []unicode.Range16{
+			{'.', '.', 1},
 			{'0', '9', 1},
 			{'A', 'Z', 1},
-			{'_', '_', 1},
 			{'a', 'z', 1},
 		},
 	},
-	minLength: 1,
-	maxLength: 15,
+	minLength: 5,
+	maxLength: 50,
 }
 
 func New() usrname.Checker {
-	return &twitterImpl
+	return &facebookImpl
 }
 
-func (t *twitter) Name() string {
-	return t.name
+func (s *facebook) Name() string {
+	return s.name
 }
 
-func (s *twitter) Link(username string) string {
+func (s *facebook) Link(username string) string {
 	u := url.URL{
 		Scheme: s.scheme,
 		Host:   s.host,
@@ -57,26 +54,25 @@ func (s *twitter) Link(username string) string {
 	return u.String()
 }
 
-func (v *twitter) IllegalPattern() *regexp.Regexp {
-	return v.illegalPattern
+func (*facebook) IllegalPattern() *regexp.Regexp {
+	return nil
 }
 
-func (v *twitter) Whitelist() *unicode.RangeTable {
+func (v *facebook) Whitelist() *unicode.RangeTable {
 	return v.whitelist
 }
 
-// See https://help.twitter.com/en/managing-your-account/twitter-username-rules
-func (v *twitter) Validate(username string) []usrname.Violation {
+// See https://help.facebook.com/en/managing-your-account/facebook-username-rules
+func (v *facebook) Validate(username string) []usrname.Violation {
 	return internal.CheckAll(
 		username,
 		internal.CheckLongerThan(v.minLength),
 		internal.CheckOnlyContains(v.whitelist),
-		internal.CheckNotMatches(v.illegalPattern),
 		internal.CheckShorterThan(v.maxLength),
 	)
 }
 
-func (c *twitter) Check(client usrname.Client) func(string) usrname.Result {
+func (c *facebook) Check(client usrname.Client) func(string) usrname.Result {
 	return func(username string) (r usrname.Result) {
 		r.Username = username
 		r.Checker = c
@@ -103,16 +99,16 @@ func (c *twitter) Check(client usrname.Client) func(string) usrname.Result {
 		case http.StatusOK:
 			r.Status = usrname.Unavailable
 			r.Message = "account unavailable"
+		case http.StatusNotFound:
+			r.Status = usrname.Available
 		case http.StatusFound:
-			if loc := res.Header["location"]; len(loc) == 1 && loc[0] == c.suspended {
+			if loc := res.Header["location"]; len(loc) == 1 && checkRedirect(username, loc[0]) {
 				r.Status = usrname.Unavailable
 				r.Message = "account suspended"
 			} else {
 				r.Status = usrname.UnknownStatus
 				r.Message = "302 Found, but unexpected 'location'"
 			}
-		case http.StatusNotFound:
-			r.Status = usrname.Available
 		default:
 			r.Status = usrname.UnknownStatus
 			r.Message = fmt.Sprintf("unsupported status code %d", res.StatusCode)
@@ -122,10 +118,20 @@ func (c *twitter) Check(client usrname.Client) func(string) usrname.Result {
 }
 
 func request(username string) *http.Request {
-	l := twitterImpl.Link(username)
+	l := facebookImpl.Link(username)
 	req, err := http.NewRequest("HEAD", l, nil)
 	if err != nil {
 		panic(err) // should never happen
 	}
 	return req
+}
+
+func checkRedirect(username string, location string) bool {
+	root := facebookImpl.Link("") + "/"
+	ss := strings.SplitAfterN(location, root, 2)
+	return len(ss) == 2 && strings.EqualFold(normalize(ss[1]), normalize(username))
+}
+
+func normalize(s string) string {
+	return strings.Replace(s, ".", "", -1)
 }
