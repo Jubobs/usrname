@@ -12,12 +12,12 @@ import (
 	"github.com/jubobs/usrname/pinterest"
 )
 
-var s = pinterest.New()
+var checker = pinterest.New()
 
 func TestName(t *testing.T) {
 	defer leaktest.Check(t)()
 	const expected = "Pinterest"
-	actual := s.Name()
+	actual := checker.Name()
 	if actual != expected {
 		template := "got %q, want %q"
 		t.Errorf(template, actual, expected)
@@ -28,7 +28,7 @@ func TestLink(t *testing.T) {
 	defer leaktest.Check(t)()
 	const username = "foobar"
 	const expected = "https://www.pinterest.com/" + username + "/"
-	actual := s.Link(username)
+	actual := checker.Link(username)
 	if actual != expected {
 		template := "got %q, want %q"
 		t.Errorf(template, actual, expected)
@@ -76,7 +76,7 @@ func TestValidate(t *testing.T) {
 			[]usrname.Violation{
 				&usrname.IllegalChars{
 					At:        []int{6},
-					Whitelist: s.Whitelist(),
+					Whitelist: checker.Whitelist(),
 				},
 			},
 		}, {
@@ -110,7 +110,7 @@ func TestValidate(t *testing.T) {
 			[]usrname.Violation{
 				&usrname.IllegalChars{
 					At:        []int{20, 21},
-					Whitelist: s.Whitelist(),
+					Whitelist: checker.Whitelist(),
 				},
 				&usrname.TooLong{
 					Max:    30,
@@ -122,7 +122,7 @@ func TestValidate(t *testing.T) {
 	const template = "Validate(%q), got %s, want %s"
 	for _, c := range cases {
 		t.Run(c.label, func(t *testing.T) {
-			if vv := s.Validate(c.username); !reflect.DeepEqual(vv, c.violations) {
+			if vv := checker.Validate(c.username); !reflect.DeepEqual(vv, c.violations) {
 				t.Errorf(template, c.username, vv, c.violations)
 			}
 		})
@@ -174,7 +174,7 @@ func TestCheck(t *testing.T) {
 	const template = "Check(%q), got %q, want %q"
 	for _, c := range cases {
 		t.Run(c.label, func(t *testing.T) {
-			res := s.Check(c.client)(c.username)
+			res := checker.Check(c.client)(c.username)
 			actual := res.Status
 			expected := c.status
 			if actual != expected {

@@ -44,11 +44,11 @@ func New() usrname.Checker {
 	return &disqusImpl
 }
 
-func (t *disqus) Name() string {
-	return t.name
+func (s *disqus) Name() string {
+	return s.name
 }
 
-func (t *disqus) Link(username string) string {
+func (*disqus) Link(username string) string {
 	u := url.URL{
 		Scheme: disqusImpl.scheme,
 		Host:   disqusImpl.host,
@@ -57,35 +57,35 @@ func (t *disqus) Link(username string) string {
 	return u.String() + "/" // important to avoid redirects
 }
 
-func (t *disqus) IllegalPattern() *regexp.Regexp {
+func (*disqus) IllegalPattern() *regexp.Regexp {
 	return nil
 }
 
-func (t *disqus) Whitelist() *unicode.RangeTable {
-	return t.whitelist
+func (v *disqus) Whitelist() *unicode.RangeTable {
+	return v.whitelist
 }
 
 // See https://help.disqus.com/en/managing-your-account/disqus-username-rules
-func (t *disqus) Validate(username string) []usrname.Violation {
+func (v *disqus) Validate(username string) []usrname.Violation {
 	return internal.CheckAll(
 		username,
-		internal.CheckLongerThan(t.minLength),
-		internal.CheckOnlyContains(t.whitelist),
-		internal.CheckIllegalPrefix(t.illegalPrefix),
-		internal.CheckIllegalSuffix(t.illegalSuffix),
-		internal.CheckShorterThan(t.maxLength),
+		internal.CheckLongerThan(v.minLength),
+		internal.CheckOnlyContains(v.whitelist),
+		internal.CheckIllegalPrefix(v.illegalPrefix),
+		internal.CheckIllegalSuffix(v.illegalSuffix),
+		internal.CheckShorterThan(v.maxLength),
 	)
 }
 
-func (t *disqus) Check(client usrname.Client) func(string) usrname.Result {
+func (c *disqus) Check(client usrname.Client) func(string) usrname.Result {
 	return func(username string) (r usrname.Result) {
 		r.Username = username
-		r.Checker = t
+		r.Checker = c
 
-		if vv := t.Validate(username); len(vv) != 0 {
+		if vv := c.Validate(username); len(vv) != 0 {
 			r.Status = usrname.Invalid
 			const templ = "%q is invalid on %s"
-			r.Message = fmt.Sprintf(templ, username, t.Name())
+			r.Message = fmt.Sprintf(templ, username, c.Name())
 			return
 		}
 
@@ -94,7 +94,7 @@ func (t *disqus) Check(client usrname.Client) func(string) usrname.Result {
 		if err != nil {
 			r.Status = usrname.UnknownStatus
 			if internal.IsTimeout(err) {
-				r.Message = fmt.Sprintf("%s timed out", t.Name())
+				r.Message = fmt.Sprintf("%s timed out", c.Name())
 			} else {
 				r.Message = "Something went wrong"
 			}

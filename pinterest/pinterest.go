@@ -42,11 +42,11 @@ func New() usrname.Checker {
 	return &pinterestImpl
 }
 
-func (t *pinterest) Name() string {
-	return t.name
+func (s *pinterest) Name() string {
+	return s.name
 }
 
-func (t *pinterest) Link(username string) string {
+func (*pinterest) Link(username string) string {
 	u := url.URL{
 		Scheme: pinterestImpl.scheme,
 		Host:   pinterestImpl.host,
@@ -55,22 +55,22 @@ func (t *pinterest) Link(username string) string {
 	return u.String() + "/" // important to avoid redirects
 }
 
-func (t *pinterest) IllegalPattern() *regexp.Regexp {
+func (*pinterest) IllegalPattern() *regexp.Regexp {
 	return nil
 }
 
-func (t *pinterest) Whitelist() *unicode.RangeTable {
-	return t.whitelist
+func (v *pinterest) Whitelist() *unicode.RangeTable {
+	return v.whitelist
 }
 
 // See https://help.pinterest.com/en/managing-your-account/pinterest-username-rules
-func (t *pinterest) Validate(username string) []usrname.Violation {
+func (v *pinterest) Validate(username string) []usrname.Violation {
 	return internal.CheckAll(
 		username,
-		internal.CheckLongerThan(t.minLength),
-		internal.CheckOnlyContains(t.whitelist),
-		internal.CheckIllegalPrefix(t.illegalPrefix),
-		internal.CheckShorterThan(t.maxLength),
+		internal.CheckLongerThan(v.minLength),
+		internal.CheckOnlyContains(v.whitelist),
+		internal.CheckIllegalPrefix(v.illegalPrefix),
+		internal.CheckShorterThan(v.maxLength),
 	)
 }
 

@@ -40,11 +40,11 @@ func New() usrname.Checker {
 	return &redditImpl
 }
 
-func (t *reddit) Name() string {
-	return t.name
+func (s *reddit) Name() string {
+	return s.name
 }
 
-func (t *reddit) Link(username string) string {
+func (*reddit) Link(username string) string {
 	u := url.URL{
 		Scheme: redditImpl.scheme,
 		Host:   redditImpl.host,
@@ -53,21 +53,21 @@ func (t *reddit) Link(username string) string {
 	return u.String()
 }
 
-func (t *reddit) IllegalPattern() *regexp.Regexp {
+func (*reddit) IllegalPattern() *regexp.Regexp {
 	return nil
 }
 
-func (t *reddit) Whitelist() *unicode.RangeTable {
-	return t.whitelist
+func (v *reddit) Whitelist() *unicode.RangeTable {
+	return v.whitelist
 }
 
 // See https://help.reddit.com/en/managing-your-account/reddit-username-rules
-func (t *reddit) Validate(username string) []usrname.Violation {
+func (v *reddit) Validate(username string) []usrname.Violation {
 	return internal.CheckAll(
 		username,
-		internal.CheckLongerThan(t.minLength),
-		internal.CheckOnlyContains(t.whitelist),
-		internal.CheckShorterThan(t.maxLength),
+		internal.CheckLongerThan(v.minLength),
+		internal.CheckOnlyContains(v.whitelist),
+		internal.CheckShorterThan(v.maxLength),
 	)
 }
 
@@ -87,10 +87,7 @@ func (c *reddit) Check(client usrname.Client) func(string) usrname.Result {
 		res, err := client.Do(req)
 		if err != nil {
 			r.Status = usrname.UnknownStatus
-			type timeout interface {
-				Timeout() bool
-			}
-			if err, ok := err.(timeout); ok && err.Timeout() {
+			if internal.IsTimeout(err) {
 				r.Message = fmt.Sprintf("%s timed out", c.Name())
 			} else {
 				r.Message = "Something went wrong"

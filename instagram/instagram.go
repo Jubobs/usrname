@@ -47,11 +47,11 @@ func New() usrname.Checker {
 	return &instagramImpl
 }
 
-func (t *instagram) Name() string {
-	return t.name
+func (s *instagram) Name() string {
+	return s.name
 }
 
-func (t *instagram) Link(username string) string {
+func (*instagram) Link(username string) string {
 	u := url.URL{
 		Scheme: instagramImpl.scheme,
 		Host:   instagramImpl.host,
@@ -60,24 +60,24 @@ func (t *instagram) Link(username string) string {
 	return u.String() + "/" // important to avoid redirects
 }
 
-func (t *instagram) IllegalPattern() *regexp.Regexp {
+func (*instagram) IllegalPattern() *regexp.Regexp {
 	return nil
 }
 
-func (t *instagram) Whitelist() *unicode.RangeTable {
-	return t.whitelist
+func (v *instagram) Whitelist() *unicode.RangeTable {
+	return v.whitelist
 }
 
 // See https://help.instagram.com/en/managing-your-account/instagram-username-rules
-func (t *instagram) Validate(username string) []usrname.Violation {
+func (v *instagram) Validate(username string) []usrname.Violation {
 	return internal.CheckAll(
 		username,
-		internal.CheckLongerThan(t.minLength),
-		internal.CheckOnlyContains(t.whitelist),
-		internal.CheckIllegalPrefix(t.illegalPrefix),
-		internal.CheckIllegalSubstring(t.illegalSubstring),
-		internal.CheckIllegalSuffix(t.illegalSuffix),
-		internal.CheckShorterThan(t.maxLength),
+		internal.CheckLongerThan(v.minLength),
+		internal.CheckOnlyContains(v.whitelist),
+		internal.CheckIllegalPrefix(v.illegalPrefix),
+		internal.CheckIllegalSubstring(v.illegalSubstring),
+		internal.CheckIllegalSuffix(v.illegalSuffix),
+		internal.CheckShorterThan(v.maxLength),
 	)
 }
 

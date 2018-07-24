@@ -46,11 +46,11 @@ func New() usrname.Checker {
 	return &githubImpl
 }
 
-func (t *github) Name() string {
-	return t.name
+func (s *github) Name() string {
+	return s.name
 }
 
-func (t *github) Link(username string) string {
+func (*github) Link(username string) string {
 	u := url.URL{
 		Scheme: githubImpl.scheme,
 		Host:   githubImpl.host,
@@ -59,24 +59,24 @@ func (t *github) Link(username string) string {
 	return u.String()
 }
 
-func (t *github) IllegalPattern() *regexp.Regexp {
+func (*github) IllegalPattern() *regexp.Regexp {
 	return nil
 }
 
-func (t *github) Whitelist() *unicode.RangeTable {
-	return t.whitelist
+func (v *github) Whitelist() *unicode.RangeTable {
+	return v.whitelist
 }
 
 // See https://help.github.com/en/managing-your-account/github-username-rules
-func (t *github) Validate(username string) []usrname.Violation {
+func (v *github) Validate(username string) []usrname.Violation {
 	return internal.CheckAll(
 		username,
-		internal.CheckLongerThan(t.minLength),
-		internal.CheckOnlyContains(t.whitelist),
-		internal.CheckIllegalPrefix(t.illegalPrefix),
-		internal.CheckIllegalSubstring(t.illegalSubstring),
-		internal.CheckIllegalSuffix(t.illegalSuffix),
-		internal.CheckShorterThan(t.maxLength),
+		internal.CheckLongerThan(v.minLength),
+		internal.CheckOnlyContains(v.whitelist),
+		internal.CheckIllegalPrefix(v.illegalPrefix),
+		internal.CheckIllegalSubstring(v.illegalSubstring),
+		internal.CheckIllegalSuffix(v.illegalSuffix),
+		internal.CheckShorterThan(v.maxLength),
 	)
 }
 

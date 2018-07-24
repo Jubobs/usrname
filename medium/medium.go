@@ -41,11 +41,11 @@ func New() usrname.Checker {
 	return &mediumImpl
 }
 
-func (t *medium) Name() string {
-	return t.name
+func (s *medium) Name() string {
+	return s.name
 }
 
-func (t *medium) Link(username string) string {
+func (*medium) Link(username string) string {
 	u := url.URL{
 		Scheme: mediumImpl.scheme,
 		Host:   mediumImpl.host,
@@ -54,21 +54,21 @@ func (t *medium) Link(username string) string {
 	return u.String()
 }
 
-func (t *medium) IllegalPattern() *regexp.Regexp {
+func (*medium) IllegalPattern() *regexp.Regexp {
 	return nil
 }
 
-func (t *medium) Whitelist() *unicode.RangeTable {
-	return t.whitelist
+func (v *medium) Whitelist() *unicode.RangeTable {
+	return v.whitelist
 }
 
 // See https://help.medium.com/en/managing-your-account/medium-username-rules
-func (t *medium) Validate(username string) []usrname.Violation {
+func (v *medium) Validate(username string) []usrname.Violation {
 	return internal.CheckAll(
 		username,
-		internal.CheckLongerThan(t.minLength),
-		internal.CheckOnlyContains(t.whitelist),
-		internal.CheckShorterThan(t.maxLength),
+		internal.CheckLongerThan(v.minLength),
+		internal.CheckOnlyContains(v.whitelist),
+		internal.CheckShorterThan(v.maxLength),
 	)
 }
 

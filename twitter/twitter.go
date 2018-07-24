@@ -76,15 +76,15 @@ func (t *twitter) Validate(username string) []usrname.Violation {
 	)
 }
 
-func (t *twitter) Check(client usrname.Client) func(string) usrname.Result {
+func (c *twitter) Check(client usrname.Client) func(string) usrname.Result {
 	return func(username string) (r usrname.Result) {
 		r.Username = username
-		r.Checker = t
+		r.Checker = c
 
-		if vv := t.Validate(username); len(vv) != 0 {
+		if vv := c.Validate(username); len(vv) != 0 {
 			r.Status = usrname.Invalid
 			const templ = "%q is invalid on %s"
-			r.Message = fmt.Sprintf(templ, username, t.Name())
+			r.Message = fmt.Sprintf(templ, username, c.Name())
 			return
 		}
 
@@ -93,7 +93,7 @@ func (t *twitter) Check(client usrname.Client) func(string) usrname.Result {
 		if err != nil {
 			r.Status = usrname.UnknownStatus
 			if internal.IsTimeout(err) {
-				r.Message = fmt.Sprintf("%s timed out", t.Name())
+				r.Message = fmt.Sprintf("%s timed out", c.Name())
 			} else {
 				r.Message = "Something went wrong"
 			}
@@ -104,7 +104,7 @@ func (t *twitter) Check(client usrname.Client) func(string) usrname.Result {
 			r.Status = usrname.Unavailable
 			r.Message = "account unavailable"
 		case http.StatusFound:
-			if loc := res.Header["location"]; len(loc) == 1 && loc[0] == t.suspended {
+			if loc := res.Header["location"]; len(loc) == 1 && loc[0] == c.suspended {
 				r.Status = usrname.Unavailable
 				r.Message = "account suspended"
 			} else {
@@ -122,8 +122,8 @@ func (t *twitter) Check(client usrname.Client) func(string) usrname.Result {
 }
 
 func request(username string) *http.Request {
-	u := twitterImpl.Link(username)
-	req, err := http.NewRequest("HEAD", u, nil)
+	l := twitterImpl.Link(username)
+	req, err := http.NewRequest("HEAD", l, nil)
 	if err != nil {
 		panic(err) // should never happen
 	}
