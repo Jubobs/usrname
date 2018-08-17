@@ -37,6 +37,12 @@ var mediumImpl = medium{
 	maxLength: 16,
 }
 
+func init() {
+	if err := usrname.Register(mediumImpl.name, &mediumImpl); err != nil {
+		panic(err)
+	}
+}
+
 func New() usrname.Checker {
 	return &mediumImpl
 }

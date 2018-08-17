@@ -40,6 +40,12 @@ var disqusImpl = disqus{
 	maxLength: 30,
 }
 
+func init() {
+	if err := usrname.Register(disqusImpl.name, &disqusImpl); err != nil {
+		panic(err)
+	}
+}
+
 func New() usrname.Checker {
 	return &disqusImpl
 }

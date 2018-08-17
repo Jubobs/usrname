@@ -43,6 +43,12 @@ var instagramImpl = instagram{
 	maxLength: 30,
 }
 
+func init() {
+	if err := usrname.Register(instagramImpl.name, &instagramImpl); err != nil {
+		panic(err)
+	}
+}
+
 func New() usrname.Checker {
 	return &instagramImpl
 }

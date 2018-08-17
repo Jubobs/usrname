@@ -36,6 +36,12 @@ var redditImpl = reddit{
 	maxLength: 20,
 }
 
+func init() {
+	if err := usrname.Register(redditImpl.name, &redditImpl); err != nil {
+		panic(err)
+	}
+}
+
 func New() usrname.Checker {
 	return &redditImpl
 }

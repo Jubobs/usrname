@@ -42,6 +42,12 @@ var githubImpl = github{
 	maxLength: 39,
 }
 
+func init() {
+	if err := usrname.Register(githubImpl.name, &githubImpl); err != nil {
+		panic(err)
+	}
+}
+
 func New() usrname.Checker {
 	return &githubImpl
 }

@@ -38,6 +38,12 @@ var pinterestImpl = pinterest{
 	maxLength: 30,
 }
 
+func init() {
+	if err := usrname.Register(pinterestImpl.name, &pinterestImpl); err != nil {
+		panic(err)
+	}
+}
+
 func New() usrname.Checker {
 	return &pinterestImpl
 }

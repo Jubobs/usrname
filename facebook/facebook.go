@@ -37,6 +37,12 @@ var facebookImpl = facebook{
 	maxLength: 50,
 }
 
+func init() {
+	if err := usrname.Register(facebookImpl.name, &facebookImpl); err != nil {
+		panic(err)
+	}
+}
+
 func New() usrname.Checker {
 	return &facebookImpl
 }

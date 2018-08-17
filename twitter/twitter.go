@@ -40,6 +40,12 @@ var twitterImpl = twitter{
 	maxLength: 15,
 }
 
+func init() {
+	if err := usrname.Register(twitterImpl.name, &twitterImpl); err != nil {
+		panic(err)
+	}
+}
+
 func New() usrname.Checker {
 	return &twitterImpl
 }
